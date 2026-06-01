@@ -1,4 +1,5 @@
 from WebpageSaver.Crawler.Webdrivers.WebdriversRepo import WebdriversRepo
+from WebpageSaver.Crawler.Webdrivers.Webdriver import Webdriver
 from WebpageSaver.Crawler.WebPage import WebPage
 from WebpageSaver.Crawler.Crawler import Crawler
 from WebpageSaver import config
@@ -15,12 +16,43 @@ class API:
     def __init__(self):
         self.w_repo = WebdriversRepo()
 
-    def getWebdrivers(self) -> list:
+    def getWebdrivers(self, conv: bool = True) -> list:
         payload = list()
         for wd in self.w_repo.getAll():
-            payload.append(wd.model_dump(exclude_none = True))
+            if conv:
+                payload.append(wd.model_dump(exclude_none = True))
+            else:
+                payload.append(wd)
 
         return payload
+
+    async def getAvailableWebdrivers(self) -> dict:
+        return await self.w_repo.get_versions()
+
+    async def webdriverFromChannel(self, channel: dict):
+        d = channel.get('downloads').get('chrome-headless-shell')
+        platform = self.w_repo.getPlatform()
+        s = None
+
+        for i in d:
+            if i.get('platform') == platform:
+                s = i
+
+        assert s != None
+
+        shell_url = s.get('url')
+
+        w = Webdriver(
+            shell_path = '',
+            orig_url = shell_url,
+            channel = channel.get('channel'),
+            version = channel.get('version'),
+            platform = platform
+        )
+        await w.downloadFromOrigURL()
+        self.w_repo.add(w)
+
+        return w
 
     async def savePage(self, 
                        url: str, 

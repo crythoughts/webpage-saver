@@ -13,6 +13,7 @@
 - [ ] screenshot canvases
 - [ ] 302 response
 - [ ] iframes
+- [ ] urls with `../`
 
 **saver**
 

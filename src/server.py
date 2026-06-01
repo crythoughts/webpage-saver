@@ -248,9 +248,53 @@ def sfp(request: web.Request):
         'items': res.get('items')
     })
 
+@routes.get('/webdrivers')
+def sfp(request: web.Request):
+
+    return aiohttp_jinja2.render_template('webdrivers.html',request,{
+        'items': api.getWebdrivers(conv = False)
+    })
+
 @routes.get('/api/webdrivers')
 async def gw(request: web.Request):
     return web.json_response(api.getWebdrivers())
+
+'''
+@routes.get('/api/webdrivers/get_chromedrivers')
+async def gc(request: web.Request):
+    return web.json_response(await api.getAvailableWebdrivers())
+'''
+
+@routes.post('/api/webdrivers/download')
+async def gc(request: web.Request):
+    query = request.rel_url.query
+    channel = query.get('channel', 'Stable')
+
+    assert channel != None and channel in ['Stable', 'Beta', 'Canary', 'Dev']
+
+    w = await api.getAvailableWebdrivers()
+    c = w.get(channel)
+    v = await api.webdriverFromChannel(c)
+
+    return web.json_response(v.model_dump(exclude_none = True, exclude_defaults=True))
+
+@routes.patch('/api/webdrivers/stop')
+async def gw(request: web.Request):
+    query = request.rel_url.query
+    ids = int(query.get('id'))
+    ws = api.getWebdrivers(conv = False)
+    w = None
+
+    try:
+        w = ws[ids]
+    except:
+        raise web.HTTPNotFound()
+
+    await w.stop()
+
+    return web.json_response({
+        'res': 1
+    })
 
 @routes.post('/api/pages/save')
 async def sp(request: web.Request):

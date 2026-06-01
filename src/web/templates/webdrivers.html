@@ -1,0 +1,42 @@
+{% extends '@layout.html' %}
+
+{% block body %}
+    <table>
+        <thead>
+            <tr>
+                <td>type</td>
+                <td>version</td>
+                <td>platform</td>
+                <td>user-agent</td>
+                <td>is running</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{item.webdriver_type}}</td>
+                <td>{{item.version}}</td>
+                <td>{{item.platform}}</td>
+                <td>{{item.getUserAgentString()}}</td>
+                {% if item.is_running %}
+                    <td>yes <a href="javascript:fetch('/api/webdrivers/stop?id={{item.id}}', {method: 'PATCH'})">(stop)</a></td>
+                {% else %}
+                    <td>no</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <a href="javascript:d()">download</a>
+
+    <script>
+        async function d() {
+            const f = await fetch('/api/webdrivers/download', {'method': 'POST'})
+            const da = await f.json()
+            location.reload()
+        }
+    </script>
+{% endblock %}
