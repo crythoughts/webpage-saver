@@ -13,7 +13,7 @@ import zipfile
 
 class Webdriver(BaseModel):
     _browser: Any = None
-    id: int = Field(default = None)
+    id: int = Field(default = None, exclude = True)
     channel: str = Field(default = None)
     version: str = Field(default = None)
     platform: str = Field(default = 'win64')
@@ -90,10 +90,10 @@ class Webdriver(BaseModel):
         return _passed.string
 
     def getHeadlessShell(self) -> Path:
-        if Path(self.shell_path).is_relative_to(config.drivers):
-            return config.drivers.joinpath(self.shell_path)
-        else:
+        if Path(self.shell_path).is_absolute():
             return self.shell_path
+        else:
+            return config.drivers.joinpath(self.shell_path)
 
     async def stop(self):
         '''
@@ -150,4 +150,6 @@ class Webdriver(BaseModel):
 
         zip_file.unlink()
 
-        self.shell_path = str(zip_file.relative_to(config.drivers))
+        shell_path = self_dir.joinpath('chrome-headless-shell-{0}/chrome-headless-shell.exe'.format(self.platform))
+
+        self.shell_path = str(shell_path.relative_to(config.drivers))

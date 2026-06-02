@@ -90,6 +90,8 @@ class Crawler:
         async for e in webdriver_page.get_encoding():
             page.addEncoding(e)
 
+        await webdriver_page.scroll_up()
+
         if make_screenshots:
             await Screenshot().make_viewport(page, webdriver_page)
 

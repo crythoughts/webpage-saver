@@ -51,13 +51,13 @@ class WebdriversRepo:
         if similar == None:
             webdriver.id = self._i
             new_list = list()
-            new_list.append(webdriver)
 
-            for i in _list:
-                new_list.append(i.model_dump(exclude_none = True))
+            for i in _list + [webdriver]:
+                new_list.append(i.model_dump(exclude_none = True, exclude_computed_fields = True, exclude_defaults = True))
 
             config.set('webdrivers', new_list)
-            self._setCurrentWebdriverIndex(len(_list) - 1)
+            self._list.append(webdriver)
+            self._setCurrentWebdriverIndex(len(new_list) - 1)
         else:
             self._setCurrentWebdriverIndex(_list.index(w))
 

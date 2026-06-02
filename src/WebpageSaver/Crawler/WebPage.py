@@ -13,6 +13,7 @@ from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 from WebpageSaver import config
 import logging
 import json
+import shutil
 
 class WebPage(BaseModel):
 
@@ -229,3 +230,9 @@ class WebPage(BaseModel):
         from WebpageSaver.Cache import Page as DBPage
 
         return DBPage.select().where(DBPage.path_to == self.identify).first()
+
+    def delete_self(self):
+        '''
+        Deletes page dir
+        '''
+        shutil.rmtree(str(self.getDir()))

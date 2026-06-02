@@ -252,7 +252,8 @@ def sfp(request: web.Request):
 def sfp(request: web.Request):
 
     return aiohttp_jinja2.render_template('webdrivers.html',request,{
-        'items': api.getWebdrivers(conv = False)
+        'items': api.getWebdrivers(conv = False),
+        'current_index': api.w_repo._getCurrentWebdriverIndex()
     })
 
 @routes.get('/api/webdrivers')
@@ -274,7 +275,11 @@ async def gc(request: web.Request):
 
     w = await api.getAvailableWebdrivers()
     c = w.get(channel)
-    v = await api.webdriverFromChannel(c)
+
+    try:
+        v = await api.webdriverFromChannel(c)
+    except AssertionError:
+        raise web.HTTPConflict(body = 'Webdriver already downloaded')
 
     return web.json_response(v.model_dump(exclude_none = True, exclude_defaults=True))
 
@@ -324,19 +329,19 @@ async def gp(request: web.Request):
 @routes.delete('/api/page')
 async def dpbid(request: web.Request):
     page_id = request.rel_url.query.get('id')
-    api.deletePagesById(id = page_id)
+    api.deletePagesById(ids = [page_id])
 
-    return web.Response(body = 1, content_type='text/html')
+    return web.json_response({'success': 1})
 
 @routes.patch('/api/page')
 async def epbid(request: web.Request):
     page_id = request.rel_url.query.get('id')
     new_taken = request.rel_url.query.get('new_taken')
-    new_name = request.rel_url.query.get('new_name')
-    new_url = request.rel_url.query.get('new_url')
-    #api.editPageById(id = page_id)
+    #new_name = request.rel_url.query.get('new_name')
+    #new_url = request.rel_url.query.get('new_url')
+    api.editPageById(ids = [page_id], new_taken = new_taken)
 
-    return web.Response(body = 1, content_type='text/html')
+    return web.json_response({'success': 1})
 
 async def main():
     host = '127.0.0.1'

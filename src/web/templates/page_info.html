@@ -36,7 +36,13 @@
         <hr>
         <a href="/page/{{page.identify}}?mode=hyperlinks">hyperlinks from this page</a>
         <hr>
-        <a href="/page/{{page.identify}}?mode=all_assets">requests when downloading</a>
+        <a href="/page/{{page.identify}}?mode=all_assets">requests when crawling</a>
+    </div>
+
+    <hr>
+
+    <div>
+        <a href="javascript:(()=>{fetch('/api/page?id={{page.identify}}', {method: 'DELETE'}).then(location.reload())})()" style="color:red;">delete from hard drive</a>
     </div>
 
     <hr>
@@ -58,5 +64,12 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    async function edit(new_taken) {
+        const f = await fetch('/api/page?id={{page.identify}}&new_taken=' + Number(new_taken), {method: 'PATCH'})
+        location.reload()
+    }
+</script>
 
 {% endblock %}

@@ -28,7 +28,6 @@ class Page(BaseModel):
         new = Page()
         new.title = model.title
         new.path_to = path_to
-        new.taken_at = model.taken
         new.url = u.human_repr()
 
         if u.host.startswith('www.'):
@@ -41,6 +40,7 @@ class Page(BaseModel):
         return new
 
     def setData(self, data: dict):
+        self.taken_at = data.get('taken')
         self.data = json.dumps(data, ensure_ascii = False)
 
     def save(self, *args, **kwargs):

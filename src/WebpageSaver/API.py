@@ -109,9 +109,21 @@ class API:
 
         return payload
 
-    def deletePagesById(self, id: str) -> None:
-        for item in Page.select().where(Page.path_to == id):
+    def deletePagesById(self, ids: list[str]) -> None:
+        for item in Page.select().where(Page.path_to.in_(ids)):
+            i = item.toModel()
+            i.delete_self()
             item.delete_instance()
+
+    def editPageById(self, ids: list[str], new_taken: float = None) -> None:
+        print(ids, list(Page.select().where(Page.path_to.in_(ids))))
+        for item in Page.select().where(Page.path_to.in_(ids)):
+            print(new_taken)
+            if new_taken != None:
+                i = item.toModel()
+                i.taken = new_taken
+
+            i.saveData()
 
     def findPagesByURL(self, url: str, 
                        conv: bool = True,

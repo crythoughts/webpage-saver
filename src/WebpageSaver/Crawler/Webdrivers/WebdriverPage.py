@@ -91,7 +91,10 @@ class WebdriverPage:
     def override_url(self, url: str):
         self.url_override = url
 
-    async def scroll_down(self, scroll_cycles: int = 10, scroll_timeout: int = 0):
+    async def scroll_up(self):
+        return await self._page.evaluate('() => window.scrollTo(0, 0);')
+
+    async def scroll_down(self, scroll_cycles: int = 10, scroll_timeout: float = 0):
         last_height = await self._page.evaluate('() => {return document.body.scrollHeight}')
         scroll_iter = 0
 

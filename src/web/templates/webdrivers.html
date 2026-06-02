@@ -4,6 +4,7 @@
     <table>
         <thead>
             <tr>
+                <td>id</td>
                 <td>type</td>
                 <td>version</td>
                 <td>platform</td>
@@ -14,6 +15,7 @@
         <tbody>
             {% for item in items %}
             <tr>
+                <td>{{item.id}}</td>
                 <td>{{item.webdriver_type}}</td>
                 <td>{{item.version}}</td>
                 <td>{{item.platform}}</td>
@@ -27,6 +29,10 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <hr>
+
+    <span>webdrivers.current: {{current_index}}</span>
 
     <hr>
 
