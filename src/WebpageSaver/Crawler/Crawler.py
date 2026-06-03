@@ -17,7 +17,10 @@ class Crawler:
 
         async def _request(request):
             if page.url == request.url:
-                logging.info('not downloading page again')
+                #logging.info('not downloading page again')
+                return
+
+            logging.info('{0} asset'.format(request.url))
 
             webdriver_page.got_assets.append(GotRequest(
                 url = request.url,
@@ -139,7 +142,7 @@ class Crawler:
                     except Exception as e:
                         logging.exception(e)
 
-                item.replace(page)
+                item.moveUrlToAnotherAttr(page)
                 results[key].append(item)
 
         for link in results.get('get_favicons'):

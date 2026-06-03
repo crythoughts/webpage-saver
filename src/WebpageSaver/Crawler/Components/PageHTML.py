@@ -17,7 +17,7 @@ class PageHTML:
     bs: BeautifulSoup = None
     encoding: str
 
-    def get_favicons(self, orig_page: WebPage, take_default: bool = True) -> Generator:
+    def get_favicons(self, orig_page: WebPage, take_default: bool = False) -> Generator:
         for icon in self.bs.select("link[rel*='icon']"):
             favicon = Favicon(sizes = getattr(icon, 'sizes', None))
             favicon.set_url(orig_page.getRelativeURL(icon.get('href')))
@@ -38,8 +38,8 @@ class PageHTML:
 
             src = tag.get('src')
             #src = tag.get('data-__orig')
-            #item.set_url(orig_page.getRelativeURL(src))
-            item.set_url(src)
+            item.set_url(orig_page.getRelativeURL(src))
+            #item.set_url(src)
             item.set_node(tag)
             if tag.get('alt'):
                 item.alt = tag.get('alt')
@@ -243,7 +243,7 @@ class PageHTML:
                 item['href'] = '/page/{0}?mode=url&url={1}'.format(page.identify, Asset.encodeURL(_href))
 
     def prettify(self, encoding: str = 'utf-8') -> str:
-        return self.bs.prettify(encoding = encoding)
+        return str(self.bs).encode(encoding = encoding)
 
     @classmethod
     def from_html(cls, html: str):

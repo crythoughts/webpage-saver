@@ -116,9 +116,7 @@ class API:
             item.delete_instance()
 
     def editPageById(self, ids: list[str], new_taken: float = None) -> None:
-        print(ids, list(Page.select().where(Page.path_to.in_(ids))))
         for item in Page.select().where(Page.path_to.in_(ids)):
-            print(new_taken)
             if new_taken != None:
                 i = item.toModel()
                 i.taken = new_taken
@@ -143,9 +141,6 @@ class API:
                 'type': 'all_search',
                 'items': res,
             }
-
-        if url.startswith('http') == False:
-            url = 'https://' + url
 
         u = URL(url)
         assert u.host != None, 'invalid url'

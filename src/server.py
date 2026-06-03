@@ -206,7 +206,7 @@ async def gpa(request: web.Request):
         return web.HTTPNotFound(text="Not found file")
 
     return web.FileResponse(str(file), headers = {
-        'Content-Disposition': f'attachment; filename="{file_name}"',
+        'Content-Disposition': f'inline; filename="{file_name}"',
         'Content-Type': req.getContentType()
     })
 
@@ -344,8 +344,8 @@ async def epbid(request: web.Request):
     return web.json_response({'success': 1})
 
 async def main():
-    host = '127.0.0.1'
-    port = 7514
+    host = config.get('server.host', '127.0.0.1')
+    port = config.get('server.host', 7514)
 
     app = web.Application()
     aiohttp_jinja2.setup(app,

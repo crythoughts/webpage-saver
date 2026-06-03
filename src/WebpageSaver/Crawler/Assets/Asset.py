@@ -20,7 +20,7 @@ class Asset(BaseModel):
         return d[-1]
 
     # we know that contents are downloaded so it will available in the displayment
-    def replace(self, page):
+    def moveUrlToAnotherAttr(self, page):
         _node = self.get_node()
 
         if _node != None and (_node.get('href') or _node.get('src')):

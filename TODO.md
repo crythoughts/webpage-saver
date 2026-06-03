@@ -13,7 +13,10 @@
 - [ ] screenshot canvases
 - [ ] 302 response
 - [ ] iframes
-- [ ] urls with `../`
+- [x] urls with `../`
+- [ ] do not scroll up (when taking first screenshot) if there is fragment in url
+- [x] do not add useless spaces
+- [ ] do something with pages that occurs download
 
 **saver**
 

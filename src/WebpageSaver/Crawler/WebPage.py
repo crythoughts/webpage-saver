@@ -4,13 +4,10 @@ from datetime import datetime
 from pathlib import Path
 from WebpageSaver.Crawler.Assets.Asset import Asset
 from WebpageSaver.Crawler.Assets.Meta import Meta
-from WebpageSaver.Crawler.Assets.Script import Script
-from WebpageSaver.Crawler.Assets.Link import Link
-from WebpageSaver.Crawler.Assets.URL import URL
-from WebpageSaver.Crawler.Assets.Media import Media
 from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 from WebpageSaver import config
+from yarl import URL
 import logging
 import json
 import shutil
@@ -21,6 +18,11 @@ class WebPage(BaseModel):
 
     title: str = Field(default = None)
     taken: float = Field(default = None)
+
+    # HTTP
+
+    status: int = Field(default = 200)
+    redirected_to: str = Field(default = None) # identify
 
     # URLs
 
@@ -131,15 +133,15 @@ class WebPage(BaseModel):
         #_detect = chardet.detect(html.encode('utf-8', errors='ignore'))
         #self.setEncoding(_detect.get('encoding'))
 
-        try:
-            with open(self.getRootFile(), 'w', encoding = self.encoding) as file:
-                file.write(html)
-        except Exception as e:
-            logging.error("Error when writing file, encoding is {0}, trying writing bytes. ".format(self.encoding))
-            logging.exception(e)
+        with open(self.getRootFile(), 'wb') as file:
+            file.write(html)
 
-            with open(self.getRootFile(), 'wb') as file:
-                file.write(html)
+        #try:
+        #    with open(self.getRootFile(), 'w', encoding = self.encoding) as file:
+        #        file.write(html)
+        #except Exception as e:
+        #    logging.error("Error when writing file, encoding is {0}, trying writing bytes. ".format(self.encoding))
+        #    logging.exception(e)
 
     def saveData(self):
         d = self.model_dump(exclude_none = True, exclude_defaults = True)
@@ -165,9 +167,10 @@ class WebPage(BaseModel):
         '''
         Unwraps asset by its URL
         '''
-        _a = self.assets_links.items()
-        for itm in _a:
+        for itm in self.assets_links.items():
             if itm[1].url == url:
+                return (itm[0], itm[1])
+            if itm[1].url == Asset.getDecodedURL(url):
                 return (itm[0], itm[1])
 
     def getAssetPathById(self, index: int):
@@ -180,12 +183,16 @@ class WebPage(BaseModel):
         self.assets_links[ident] = request
 
     def getRelativeURL(self, url: str):
-        if not url.startswith('http'):
-            if url.startswith('data:') == True:
-                return url
+        if not url.startswith('http') and url.startswith('data:') == True:
+            return url
 
+        # May be a subdomain or full link
         if url.startswith(self.relative_url) or url.startswith('http'):
             return url
+    
+        # Relative urls. WORKAROUND
+        if url.startswith('..'):
+            return URL(self.url).joinpath(url).human_repr()
 
         if self.relative_url[-1] == '/':
             self.relative_url[-1] = ''
@@ -196,7 +203,9 @@ class WebPage(BaseModel):
             else:
                 return self.relative_url + '/' + url
         else:
-            return self.relative_url # ???
+            return self.relative_url
+
+        #return URL(self.relative_url).(url).human_repr()
 
     @classmethod
     def fromPath(cls, path_to: str):

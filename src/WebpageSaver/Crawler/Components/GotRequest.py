@@ -1,6 +1,7 @@
 from WebpageSaver.Crawler.Assets.Asset import Asset
 from pydantic import BaseModel, Field
 from typing import Any
+from yarl import URL
 import logging
 
 class GotRequest(BaseModel):
@@ -23,12 +24,4 @@ class GotRequest(BaseModel):
         return ''
 
     def url_matches(self, url: str):
-        _s = self.url.replace('https://', '').replace('http://', '')
-        _f = ''
-
-        try:
-            _f = url.replace('https://', '').replace('http://', '')
-        except Exception as e:
-            logging.exception(e)
-
-        return _s == _f
+        return URL(url) == URL(self.url)
