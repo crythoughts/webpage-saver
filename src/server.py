@@ -242,13 +242,15 @@ def spw(request: web.Request):
 @routes.get('/page/search')
 def sfp(request: web.Request):
     query = request.rel_url.query
-    q = query.get('q')
+    q = query.get('q', '')
 
     res = api.findPagesByURL(url = q, conv = False)
+    search_type = res.get('type')
 
     return aiohttp_jinja2.render_template('search.html',request,{
         'q': q,
-        'items': res.get('items')
+        'items': res.get('items'),
+        'search_type': search_type
     })
 
 @routes.get('/webdrivers')
@@ -317,7 +319,10 @@ async def sp(request: web.Request):
         if len(ps) == 0:
             return web.HTTPNotFound(body = 'Not found page to link')
 
-    payload = await api.savePage(url = url, link_pages = ps)
+    try:
+        payload = await api.savePage(url = url, link_pages = ps)
+    except Exception as e:
+        return web.Response(body = str(e), status = 500)
 
     return web.json_response(payload)
 
@@ -355,6 +360,7 @@ async def main():
         loader=jinja2.FileSystemLoader(config.cwd.joinpath('web').joinpath('templates')))
 
     app.router.add_routes(routes)
+    app.router.add_static('/static/', path='./web/static', name='static')
 
     runner = web.AppRunner(app)
     await runner.setup()

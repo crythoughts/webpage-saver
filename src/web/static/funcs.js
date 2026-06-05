@@ -1,0 +1,86 @@
+async function downloadWebdriver() {
+    const d = document.querySelector('#download_w')
+    const t = confirm('Download latest stable chromedriver?')
+
+    if (t) {
+        d.innerHTML = `Downloading...`
+        let f = null
+
+        try {
+            f = await fetch('/api/webdrivers/download', {'method': 'POST'})
+            f = await f.text()
+            f = JSON.parse(f)
+        } catch(e) {
+            alert(String(f))
+        }
+
+        location.reload()
+    }
+}
+
+async function save_ws(url, link_to) {
+    document.querySelector('#save').style.display = 'none'
+    document.querySelector('#save-win').classList.remove('hidden')
+
+    await save_submit(url, link_to)
+}
+
+function stopWebdriver(id) {
+    fetch('/api/webdrivers/stop?id=' + id, {method: 'PATCH'})
+}
+
+function save_submit(url, link_to = null) {
+    const f = new FormData()
+    f.append('url', url)
+    if (link_to) {
+        f.append('link_to', link_to)
+    }
+
+    const res = fetch('/api/pages/save', {
+        method: 'POST',
+        body: f
+    }).then(response  => {
+        if (!response.ok) {
+            response.text().then(e => {
+                alert(e)
+                location.reload()
+            })
+            return
+        }
+
+        response.json().then(r => {
+            window.location.assign('/page?id=' + r[0].path_to)
+        })
+
+    }).catch(err => {
+        alert(err.message)
+    })
+}
+
+async function edit(page_id, new_taken) {
+    const f = await fetch('/api/page?id='+page_id+'&new_taken=' + Number(new_taken), {method: 'PATCH'})
+    location.reload()
+}
+
+function deletePage(page_id) {
+    if (confirm('Delete page with id ' + page_id + '?')) {
+        fetch('/api/page?id='+page_id, {method: 'DELETE'}).then(history.back())
+    }
+}
+
+function openPageInIframe(id) {
+    if (document.querySelector('#page-iframe')) {
+        return
+    }
+
+    document.querySelector('#openPageInIframe').style.display = 'none'
+    document.querySelector('#screenshot').style.display = 'none'
+    document.querySelector('#screenshot').parentNode.insertAdjacentHTML('beforeend', `
+        <iframe id="page-iframe" class="w-full h-full" src="/page?id=${id}"></iframe>
+    `)
+
+    const v = document.querySelector('#page-main')
+    v.classList.remove('grid')
+    v.querySelector('.relative').classList.add('pb-10')
+    v.querySelector('iframe').style.minHeight = '80vh'
+}

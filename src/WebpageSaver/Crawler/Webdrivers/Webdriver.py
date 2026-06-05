@@ -102,7 +102,7 @@ class Webdriver(BaseModel):
         for i in ['_context', '_browser', '_playwright']:
             if hasattr(self, i):
                 if i != '_playwright':
-                    getattr(self, i).close()
+                    await getattr(self, i).close()
                 setattr(self, i, None)
 
         self._playwright = None

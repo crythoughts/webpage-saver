@@ -1,37 +1,41 @@
 {% extends '@layout.html' %}
 
 {% block body %}
-    <div class="p-5">
-        <div id="items" class="flex flex-col gap-2">
-            {% for item in items %}
-            <div class="hover:bg-slate-400 cursor-pointer p-2 grid grid-cols-[0fr_1fr] gap-4">
-                <div class="w-20 min-h-15 h-full bg-black"></div>
-                <div>
-                    <span>{{item.webdriver_type}}</span>
-                    <span>{{item.version}}</span>
-                    {% if item.is_running %}
-                        <td>yes <a href="javascript:fetch('/api/webdrivers/stop?id={{item.id}}', {method: 'PATCH'})">(stop)</a></td>
-                    {% else %}
-                        <td>no</td>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
+    <div id="download_w" class="p-5">
+        <div class="pl-5 pb-5">
+            <b>Webdrivers</b>
         </div>
-        <hr>
+        <div class="grid grid-cols-[1fr_0fr] gap-5">
+            <div id="items" class="flex flex-col gap-2">
+                {% for item in items %}
+                <div class="rounded hover:bg-slate-400 cursor-pointer p-5 grid grid-cols-[0fr_1fr] gap-4">
+                    <div class="flex items-center justify-center w-20 h-15 bg-slate-600">
+                        <span class="text-white font-bold text-xs">{{item.webdriver_type}}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <div>
+                            <span>{{item.version}}</span>
+                        </div>
 
-        <span>webdrivers.current: {{current_index}}</span>
-
-        <hr>
-
-        <a href="javascript:d()">download</a>
+                        <div class="flex flex-col">
+                            <a class="text-slate-200" href="javascript:delete_webdriver({{item.id}})">Delete</a>
+                            <a class="text-slate-200" href="javascript:make_webdriver_default({{item.id}})">Make default</a>
+                            <div>
+                                {% if item.is_running %}
+                                    <span>Now running.</span>
+                                    <a href="javascript:stopWebdriver({{item.id}})">(stop)</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pb-5">
+                <a href="javascript:downloadWebdriver()">
+                    <input class="p-5 bg-slate-400 cursor-pointer text-white font-bold py-2 px-4 rounded" type="button" value="Download">
+                </a>
+            </div>
+        </div>
     </div>
-
-    <script>
-        async function d() {
-            const f = await fetch('/api/webdrivers/download', {'method': 'POST'})
-            const da = await f.json()
-            location.reload()
-        }
-    </script>
 {% endblock %}

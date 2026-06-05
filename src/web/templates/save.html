@@ -1,9 +1,15 @@
 {% extends '@layout.html' %}
 
 {% block body %}
-<div>
-    <input type="text" id="url">
-    <input type="submit" onclick="save_submit(document.querySelector('#url').value)" value="save">
+<div class="pt-10 pb-10 pl-20 pr-20 flex flex-col items-end">
+    <input placeholder="URL to save" class="w-full rounded bg-slate-400 pt-2 pb-2 pr-3 pl-3 text-white" type="text" id="url">
+
+    <input id="save" class="mt-5 w-20 cursor-pointer pt-2 pb-2 pr-3 pl-3 rounded bg-slate-300" type="submit" onclick="save_ws(document.querySelector('#url').value)" value="Save">
+</div>
+
+<div id="save-win" class="p-5 hidden">
+    <b>Downloading...</b>
+    <div id="messages" class="flex flex-col gap-2"></div>
 </div>
 
 {% endblock %}

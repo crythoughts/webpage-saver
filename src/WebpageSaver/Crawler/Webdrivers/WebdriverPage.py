@@ -64,16 +64,18 @@ class WebdriverPage:
 
     async def get_encoding(self) -> AsyncGenerator[str]:
         try:
-            charset = await self._page.locator('meta[charset]').get_attribute('charset')
+            charset = await self._page.locator('meta[charset]')
             if charset:
-                yield charset
+                yield charset.get_attribute('charset')
         except:
             yield 'utf-8'
 
         try:
-            content_type = await self._page.locator('meta[http-equiv=\"Content-Type\"]').get_attribute('content')
-            if content_type and 'charset=' in content_type:
-                yield content_type.split('charset=')[1].lower()
+            content_type = await self._page.locator('meta[http-equiv=\"Content-Type\"]')
+            if content_type:
+                d = content_type.get_attribute('content')
+                if 'charset=' in d:
+                    yield content_type.split('charset=')[1].lower()
         except:
             yield 'utf-8'
 

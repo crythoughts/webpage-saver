@@ -157,7 +157,7 @@ class WebPage(BaseModel):
         if self.taken == None:
             return None
 
-        return datetime.fromtimestamp(self.taken).strftime("%d/%m/%Y, %H:%M:%S")
+        return datetime.fromtimestamp(self.taken).strftime("%Y/%m/%d, %H:%M:%S")
 
     def getAssets(self) -> Generator[GotRequest]:
         for i, v in self.assets_links.items():

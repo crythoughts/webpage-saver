@@ -127,10 +127,18 @@ class API:
                        conv: bool = True,
                        find_by_start: bool = False
                        ):
-        # If URL is empty
-        if url == '':
+        u = URL(url)
+
+        # If URL is empty or not recognized as URL: Keywords search
+        if url == '' or u.host == None:
+            pages = Page.select()
+            if url != '':
+                pages = pages.where(Page.title.startswith(url))
+
+            pages = pages.order_by(Page.taken_at.desc())
             res = list()
-            for p in Page.select().order_by(Page.taken_at.desc()):
+
+            for p in pages:
                 m = p.toModel()
                 if conv:
                     res.append(m.dump())
@@ -138,12 +146,9 @@ class API:
                     res.append(m)
 
             return {
-                'type': 'all_search',
-                'items': res,
+                'type': 'keywords_search',
+                'items': res
             }
-
-        u = URL(url)
-        assert u.host != None, 'invalid url'
 
         # Finding by start of the URL
         if find_by_start:
@@ -191,6 +196,6 @@ class API:
                     res.append(m)
 
             return {
-                'type': 'url_equal',
+                'type': 'accurate_url',
                 'items': res
             }

@@ -6,9 +6,9 @@
     <div class="flex">
         <a href="/" class="bg-black w-8 h-8"></a>
 
-        <div class="pl-5">
-            <input placeholder="Find by URL..." class="pr-3 pl-3 w-50 h-full bg-stone-200" type="text" id="search_bar">
-        </div>
+        <form action="/page/search" class="pl-5">
+            <input name="q" placeholder="Find by URL..." class="pr-3 pl-3 w-50 h-full bg-stone-200" type="text" id="search_bar">
+        </form>
     </div>
     <div>
         <div class="w-8 h-8 bg-indigo-500"></div>
@@ -22,23 +22,4 @@
     </div>
 </div>
 
-<script>
-    async function save_submit(url, link_to = null) {
-        const f = new FormData()
-        f.append('url', url)
-        if (link_to) {
-            f.append('link_to', link_to)
-        }
-
-        const res = await fetch('/api/pages/save', {
-            method: 'POST',
-            body: f
-        })
-
-        const items = await res.json()
-        const item = items[0]
-
-        window.location.assign('/page?id=' + item.path_to)
-    }
-</script>
 {% endblock %}

@@ -5,6 +5,7 @@ from WebpageSaver.Crawler.Screenshot import Screenshot
 from WebpageSaver.Crawler.Components.Increment import Increment
 from WebpageSaver.Crawler.Assets.Asset import Asset
 from datetime import datetime
+from yarl import URL
 import asyncio
 import logging
 
@@ -13,11 +14,12 @@ class Crawler:
         self.i = Increment()
 
         logging.info('registering page...')
+
         _orig_dir = page.getAssetsDir()
 
         async def _request(request):
-            if page.url == request.url:
-                #logging.info('not downloading page again')
+            if URL(page.url) == URL(request.url):
+                logging.info('not downloading page again')
                 return
 
             logging.info('{0} asset'.format(request.url))
@@ -158,7 +160,7 @@ class Crawler:
         page.write(html.prettify())
         page.saveData()
 
-        await self._after_crawl(page)
+        #await self._after_crawl(page)
 
     async def _after_crawl(self, page: WebPage):
         pass
