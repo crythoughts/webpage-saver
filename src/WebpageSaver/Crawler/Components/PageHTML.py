@@ -82,8 +82,12 @@ class PageHTML:
 
             yield item
 
-    def get_urls(self, orig_page: WebPage, keep_original_urls: bool = True):
-        for tag in self.bs.select("a"):
+    def get_urls(self, orig_page: WebPage, keep_original_urls: bool = True, only_with_href: bool = True):
+        s = 'a'
+        if only_with_href:
+            s = 'a[href]'
+
+        for tag in self.bs.select(s):
             label = tag.text
 
             url = URL()
@@ -150,6 +154,10 @@ class PageHTML:
 
     def remove_iframes(self):
         for tag in self.bs.select('iframe'):
+            tag.decompose()
+
+    def remove_meta(self):
+        for tag in self.bs.select('meta'):
             tag.decompose()
 
     def remove_selectors(self, selectors: list | str):

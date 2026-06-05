@@ -1,0 +1,23 @@
+{% extends '@page.html' %}
+
+{% block page %}
+    <div class="w-full h-screen flex flex-col justify-center items-center">
+        <div class="logo pb-4">
+            <a class="text-3xl">Webpage Saver</a>
+        </div>
+        <div>
+            <form action="/page/search">
+                <input class="w-80 p-2 rounded-md bg-teal-100" placeholder="Find by URL..." type="text" name="q">
+
+                <input class="p-2 rounded-md bg-teal-100 cursor-pointer" type="submit" value="Search">
+            </form>
+        </div>
+
+        <div class="pt-10">
+            <ul class="flex flex-col gap-2 items-center">
+                <li><a href="/save">Save</a></li>
+                <li><a href="/webdrivers">Webdrivers</a></li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}

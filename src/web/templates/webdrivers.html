@@ -1,42 +1,31 @@
 {% extends '@layout.html' %}
 
 {% block body %}
-    <table>
-        <thead>
-            <tr>
-                <td>id</td>
-                <td>type</td>
-                <td>version</td>
-                <td>platform</td>
-                <td>user-agent</td>
-                <td>is running</td>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="p-5">
+        <div id="items" class="flex flex-col gap-2">
             {% for item in items %}
-            <tr>
-                <td>{{item.id}}</td>
-                <td>{{item.webdriver_type}}</td>
-                <td>{{item.version}}</td>
-                <td>{{item.platform}}</td>
-                <td>{{item.getUserAgentString()}}</td>
-                {% if item.is_running %}
-                    <td>yes <a href="javascript:fetch('/api/webdrivers/stop?id={{item.id}}', {method: 'PATCH'})">(stop)</a></td>
-                {% else %}
-                    <td>no</td>
-                {% endif %}
-            </tr>
+            <div class="hover:bg-slate-400 cursor-pointer p-2 grid grid-cols-[0fr_1fr] gap-4">
+                <div class="w-20 min-h-15 h-full bg-black"></div>
+                <div>
+                    <span>{{item.webdriver_type}}</span>
+                    <span>{{item.version}}</span>
+                    {% if item.is_running %}
+                        <td>yes <a href="javascript:fetch('/api/webdrivers/stop?id={{item.id}}', {method: 'PATCH'})">(stop)</a></td>
+                    {% else %}
+                        <td>no</td>
+                    {% endif %}
+                </div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+        <hr>
 
-    <hr>
+        <span>webdrivers.current: {{current_index}}</span>
 
-    <span>webdrivers.current: {{current_index}}</span>
+        <hr>
 
-    <hr>
-
-    <a href="javascript:d()">download</a>
+        <a href="javascript:d()">download</a>
+    </div>
 
     <script>
         async function d() {

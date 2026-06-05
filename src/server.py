@@ -26,7 +26,7 @@ def check_path(maximum_directory: Path, path: Path):
 
 @routes.get('/')
 def ip(request: web.Request):
-    return aiohttp_jinja2.render_template('index.html',request,{})
+    return aiohttp_jinja2.render_template('@index.html',request,{})
 
 @routes.get('/page')
 async def gpbid_wmi(request: web.Request):
@@ -69,6 +69,7 @@ async def gpbid(request: web.Request):
                 query['remove_inline_css'] = 'on'
                 query['remove_styles'] = 'on'
                 query['remove_iframes'] = 'on'
+                query['remove_meta'] = 'on'
                 query['remove_selectors'] = 'nav, header, input, button'
 
             text = page.getRootFile().read_text(encoding = encoding)
@@ -83,6 +84,8 @@ async def gpbid(request: web.Request):
                 html.remove_css()
             if query.get('remove_iframes') == 'on':
                 html.remove_iframes()
+            if query.get('remove_meta') == 'on':
+                html.remove_meta()
 
             try:
                 if query.get('remove_selectors') != None:
@@ -232,7 +235,7 @@ def gpsbid(request):
         'Content-Type': 'image/jpeg'
     })
 
-@routes.get('/pages/save')
+@routes.get('/save')
 def spw(request: web.Request):
     return aiohttp_jinja2.render_template('save.html',request,{})
 

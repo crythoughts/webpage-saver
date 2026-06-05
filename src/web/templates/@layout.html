@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
-</head>
-<body>
+{% extends '@page.html' %}
+
+{% block page %}
+
+<div class="w-full bg-gray-purple p-2 pr-5 pl-2 pb-4 flex justify-between">
+    <div class="flex">
+        <a href="/" class="bg-black w-8 h-8"></a>
+
+        <div class="pl-5">
+            <input placeholder="Find by URL..." class="pr-3 pl-3 w-50 h-full bg-stone-200" type="text" id="search_bar">
+        </div>
+    </div>
+    <div>
+        <div class="w-8 h-8 bg-indigo-500"></div>
+    </div>
+</div>
+
+<div id="content" class="grid grid-cols-[0fr_1fr]">
+    <div class="w-40"></div>
+    <div class="bg-slate-200 h-auto">
+        {% block body %}{% endblock %}
+    </div>
+</div>
 
 <script>
     async function save_submit(url, link_to = null) {
@@ -25,9 +41,4 @@
         window.location.assign('/page?id=' + item.path_to)
     }
 </script>
-
-{% block body %}
 {% endblock %}
- 
-</body>
-</html>
