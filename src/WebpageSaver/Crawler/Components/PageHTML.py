@@ -28,7 +28,7 @@ class PageHTML:
         if take_default:
             yield Favicon(url = orig_page.base_url + '/favicon.ico')
 
-    def get_media(self, orig_page: WebPage, selector: str = None) -> Generator:
+    def get_media(self, orig_page: WebPage, selector: str = None, original_urls: bool = True, set_local_urls: bool = False) -> Generator:
         if selector == None:
             selector = "[src]"
 
@@ -36,10 +36,16 @@ class PageHTML:
             item = Media()
             item.tagName = tag.name
 
-            src = tag.get('src')
-            #src = tag.get('data-__orig')
+            src = ''
+
+            if original_urls:
+                src = tag.get(orig_page.getOrigAttr())
+            if set_local_urls:
+                item.set_local_url(tag.get('src'))
+            if src == None or original_urls == False:
+                src = tag.get('src')
+
             item.set_url(orig_page.getRelativeURL(src))
-            #item.set_url(src)
             item.set_node(tag)
             if tag.get('alt'):
                 item.alt = tag.get('alt')
@@ -212,7 +218,7 @@ class PageHTML:
         for tag in self.bs.find_all(attrs={"integrity": True}):
             del tag['integrity']
 
-    def make_correct_links(self, page: WebPage):
+    def make_correct_links(self, page: WebPage, remove_temporary_attrs: bool = True):
         for item in self.bs.select('link[href]'):
             if item.get(page.getOrigAttr()) != None:
                 continue
@@ -228,15 +234,16 @@ class PageHTML:
             _key = item[page.getKeyAttr()]
             _id = page.getAssetByUrl(_url)
             # removing internal data attributes
-            item.attrs = {key:value for key,value in item.attrs.items()
-                    if key not in [page.getOrigAttr(), page.getKeyAttr()]}
+            if remove_temporary_attrs:
+                item.attrs = {key:value for key,value in item.attrs.items()
+                        if key not in [page.getOrigAttr(), page.getKeyAttr()]}
 
             if _id == None:
                 logging.error('page {0}: element \"{1}\" is missing'.format(page.identify, _url))
 
                 continue
 
-            item[_key] = '/page/asset?id={0}&path={1}'.format(page.identify, _id[0])
+            item[_key] = _id[1].asset.getLocalURL(page, _id[0])
 
         for item in self.bs.select('meta[http-equiv]'):
             item.decompose()

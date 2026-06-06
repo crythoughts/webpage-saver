@@ -2,40 +2,63 @@
 
 {% block body %}
 
-<form>
-    <input type="hidden" name="mode" value="media">
-    <select name="mmode">
-        <option value="all">all</option>
-        <option value="img">img</option>
-        <option value="video">video</option>
-    </select>
-    <input type="submit" value=".">
-</form>
-<hr>
+<div class="p-5">
+    <form id="changer">
+        <input type="hidden" name="mode" value="media">
+        <select class="bg-white pt-1 pb-1 pl-5 pr-5" onchange="changer.submit()" name="mmode">
+            <option value="" selected>Type</option>
+            <option value="all">All</option>
+            <option value="img">Images</option>
+            <option value="video">Videos</option>
+        </select>
+    </form>
 
-<table>
-    <thead>
-        <tr>
-            <td>url</td>
-            <td>tagName</td>
-            <td>alt</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in media %}
-            <tr>
-                <td>
-                    {% if mmode == 'img' %}
-                        <img src="{{i.url}}">
-                    {% else%}
-                        {{i.url}}
-                    {% endif %}
-                </td>
-                <td>{{i.tagName}}</td>
-                <td>{{i.alt}}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="pt-5">
+        {% if mmode != 'img' %}
+            <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+                <thead class="text-center p-1">
+                    <tr>
+                        <td>URL</td>
+                        <td>Tag</td>
+                        <td>Alt</td>
+                        <td>Local</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in media %}
+                        <tr>
+                            <td>
+                                <a class="text-sky-700" href="{{i.url}}">{{i.getShortURL()}}</a>
+                            </td>
+                            <td>{{i.tagName}}</td>
+                            <td>{{i.alt or '-'}}</td>
+                            <td>
+                                {% if i.hasLocalURL() %}
+                                    <a href="{{i.local_url}}">Open</a>
+                                {% else %}
+                                    <span>Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="h-100 max-h-100 flex items-center justify-center m-5">
+                <a href="">
+                    <img id="photo_media_page" class="object-contain h-full w-full" src="" alt="">
+                </a>
+            </div>
+            <div id="photos_slider" class="flex overflow-x-auto overflow-y-hidden max-w-full gap-1 w-[calc(100vw-200px)]">
+                {% for i in media %}
+                    <div onclick="openPhoto(photo_media_page, event)" class="cursor-pointer shrink-0 w-20 h-20 bg-gray-400 flex items-center justify-center">
+                        <img loading="lazy" class="object-contain" src="{{i.local_url}}" data-url="{{i.url}}" alt="{{i.alt}}">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 
 {% endblock %}

@@ -23,5 +23,8 @@ class GotRequest(BaseModel):
 
         return ''
 
+    def getDownloadedIn(self) -> float:
+        return round(self.ended_at - self.started_at, 2)
+
     def url_matches(self, url: str):
         return URL(url) == URL(self.url)

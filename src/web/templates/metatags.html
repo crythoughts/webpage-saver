@@ -2,63 +2,71 @@
 
 {% block body %}
 
-<h1>metatags</h1>
+<div class="p-5">
+    <div>
+        <b>Metatags</b>
 
-<table>
-    <thead>
-        <tr>
-            <td>name</td>
-            <td>content</td>
-            <td>property</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in metatags %}
-        <tr>
-            <td>{{i.name}}</td>
-            <td>{{i.content}}</td>
-            <td>{{i.property}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+            <thead>
+                <tr>
+                    <td>name</td>
+                    <td>content</td>
+                    <td>property</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in metatags %}
+                <tr>
+                    <td>{{i.name}}</td>
+                    <td>{{i.content}}</td>
+                    <td>{{i.property}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<h1>links</h1>
+    <div>
+        <b>Links</b>
 
-<table>
-    <thead>
-        <tr>
-            <td>name</td>
-            <td>media</td>
-            <td>type</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in links %}
-        <tr>
-            <td>{{i.rel}}</td>
-            <td>{{i.media}}</td>
-            <td>{{i.type}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+            <thead>
+                <tr>
+                    <td>name</td>
+                    <td>media</td>
+                    <td>type</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in links %}
+                <tr>
+                    <td>{{i.rel}}</td>
+                    <td>{{i.media}}</td>
+                    <td>{{i.type}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<h1>scripts</h1>
+    <div>
+        <b>Scripts</b>
 
-<table>
-    <thead>
-        <tr>
-            <td>url</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in scripts %}
-        <tr>
-            <td>{{i.url}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+            <thead>
+                <tr>
+                    <td>URL</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in scripts %}
+                <tr>
+                    <td>{{i.url}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

@@ -95,6 +95,9 @@ class Webdriver(BaseModel):
         else:
             return config.drivers.joinpath(self.shell_path)
 
+    def delete(self):
+        return True
+
     async def stop(self):
         '''
         Stops browser emulator.

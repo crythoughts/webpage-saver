@@ -1,13 +1,13 @@
 {% extends '@layout.html' %}
 
 {% block body %}
-    <table>
+    <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
         <thead>
             <tr>
-                <td>url</td>
-                <td>content-type</td>
-                <td>filename</td>
-                <td>downloaded in</td>
+                <td>URL</td>
+                <td>Content-Type</td>
+                <td>Filename</td>
+                <td>Downloaded in</td>
             </tr>
         </thead>
         <tbody>
@@ -18,7 +18,7 @@
                 <td>{{i.asset.getName()}}</td>
 
                 {% if i.started_at and i.ended_at %}
-                    <td>{{i.ended_at - i.started_at}}</td>
+                    <td>{{i.getDownloadedIn()}}s</td>
                 {% endif %}
             </tr>
             {% endfor %}

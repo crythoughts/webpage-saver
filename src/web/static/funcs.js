@@ -29,6 +29,18 @@ function stopWebdriver(id) {
     fetch('/api/webdrivers/stop?id=' + id, {method: 'PATCH'})
 }
 
+function make_webdriver_default(id) {
+    fetch('/api/webdrivers/setDefault?id=' + id, {method: 'PUT'}).then(e => {
+        location.reload()
+    })
+}
+
+function delete_webdriver(id) {
+    fetch('/api/webdriver?id=' + id, {method: 'DELETE'}).then(e => {
+        location.reload()
+    })
+}
+
 function save_submit(url, link_to = null) {
     const f = new FormData()
     f.append('url', url)
@@ -83,4 +95,9 @@ function openPageInIframe(id) {
     v.classList.remove('grid')
     v.querySelector('.relative').classList.add('pb-10')
     v.querySelector('iframe').style.minHeight = '80vh'
+}
+
+function openPhoto(element, event) {
+    element.parentNode.href = event.target.dataset.url
+    element.src = event.target.src
 }

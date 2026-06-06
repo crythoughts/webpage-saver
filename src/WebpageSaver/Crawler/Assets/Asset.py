@@ -11,6 +11,7 @@ class Asset(BaseModel):
     Anything that contains url or media data
     '''
     url: str = Field(default = None)
+    local_url: str = Field(default = None, exclude = True)
     bs_node: Any = Field(default = None, exclude = True)
     model_config = ConfigDict(extra='allow')
 
@@ -18,6 +19,14 @@ class Asset(BaseModel):
         d = self.url.split('/')
 
         return d[-1]
+
+    def getShortURL(self):
+        d = self.url[0:50]
+
+        if d == self.url:
+            return self.url
+
+        return d + '...'
 
     # we know that contents are downloaded so it will available in the displayment
     def moveUrlToAnotherAttr(self, page):
@@ -42,6 +51,9 @@ class Asset(BaseModel):
                 return
 
         self.url = href
+
+    def set_local_url(self, href: str):
+        self.local_url = href
 
     def get_url(self):
         return self.url
@@ -82,3 +94,9 @@ class Asset(BaseModel):
 
     def get_node(self):
         return self.bs_node
+
+    def getLocalURL(self, from_page, id: int):
+        return '/page/asset?id={0}&path={1}'.format(from_page.identify, id)
+
+    def hasLocalURL(self):
+        return self.local_url not in [None, '']

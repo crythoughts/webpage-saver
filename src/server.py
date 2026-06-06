@@ -108,7 +108,8 @@ async def gpbid(request: web.Request):
 
             return aiohttp_jinja2.render_template('page_options.html', request, {
                 'page': page,
-                'id': page_id
+                'id': page_id,
+                'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
         case 'meta':
@@ -126,13 +127,15 @@ async def gpbid(request: web.Request):
 
             return aiohttp_jinja2.render_template('url.html', request, {
                 'url': redirect_url,
-                'id': page.identify
+                'id': page.identify,
+                'back_btn': '/page/' + page_id
             })
 
         case 'all_assets':
 
             return aiohttp_jinja2.render_template('all_assets.html', request, {
-                'assets': page.getAssets()
+                'assets': page.getAssets(),
+                'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
         case 'metatags':
@@ -144,6 +147,7 @@ async def gpbid(request: web.Request):
                 'metatags': page.meta,
                 'links': html.get_links(page),
                 'scripts': html.get_scripts(page),
+                'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
         case 'media':
@@ -152,13 +156,26 @@ async def gpbid(request: web.Request):
             text = page.getRootFile().read_text(encoding = encoding)
             html = PageHTML.from_html(text)
             if query.get('original') != 'on':
-                html.make_correct_links(page)
+                html.make_correct_links(page, remove_temporary_attrs = False)
 
-            medias = html.get_media(page, mmode)
+            selectors = None
+
+            match (mmode):
+                case 'all':
+                    selectors = '[src]'
+                case 'img':
+                    selectors = 'img[src]'
+                case 'video':
+                    selectors = 'video[src]'
+                case 'audio':
+                    selectors = 'audio[src]'
+
+            medias = html.get_media(page, selectors, set_local_urls = True)
 
             return aiohttp_jinja2.render_template('media.html', request, {
                 'media': medias,
-                'mmode': mmode
+                'mmode': mmode,
+                'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
         case 'hyperlinks':
@@ -171,7 +188,9 @@ async def gpbid(request: web.Request):
                 html.make_correct_links(page)
 
             return aiohttp_jinja2.render_template('hyperlinks.html', request, {
-                'urls': html.get_urls(page, keep_original_urls = rel == 'off')
+                'urls': html.get_urls(page, keep_original_urls = rel == 'off'),
+                'page': page,
+                'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
 @routes.get('/page/asset')
@@ -301,6 +320,42 @@ async def gw(request: web.Request):
         raise web.HTTPNotFound()
 
     await w.stop()
+
+    return web.json_response({
+        'res': 1
+    })
+
+@routes.put('/api/webdrivers/setDefault')
+async def gw(request: web.Request):
+    query = request.rel_url.query
+    ids = int(query.get('id'))
+    ws = api.getWebdrivers(conv = False)
+    w = None
+
+    try:
+        w = ws[ids]
+    except:
+        raise web.HTTPNotFound()
+
+    api.w_repo._setCurrentWebdriverIndex(w.id)
+
+    return web.json_response({
+        'res': 1
+    })
+
+@routes.delete('/api/webdriver')
+async def gw(request: web.Request):
+    query = request.rel_url.query
+    ids = int(query.get('id'))
+    ws = api.getWebdrivers(conv = False)
+    w = None
+
+    try:
+        w = ws[ids]
+    except:
+        raise web.HTTPNotFound()
+
+    w.delete()
 
     return web.json_response({
         'res': 1

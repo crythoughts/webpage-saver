@@ -1,12 +1,30 @@
 {% extends '@layout.html' %}
 
 {% block body %}
-{{url}}
-<div>
-    <a href="javascript:history.back()"><input type="button" value="back"></a>
-    <a href="{{url}}"><input type="button" value="go to original"></a>
-    <a href="javascript:save_page_link()"><input type="button" value="archive"></a>
-    <a><input type="button" value="find"></a>
+
+<div class="p-5 flex flex-col gap-5">
+    <div class="flex justify-center items-center">
+        <span>{{url}}</span>
+    </div>
+    <div class="flex gap-2 justify-center">
+        <a href="javascript:history.back()">
+            <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Back">
+        </a>
+        <a href="{{url}}">
+            <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Show original">
+        </a>
+        <a href="javascript:save_page_link()">
+            <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Save">
+        </a>
+        <div class="flex flex-col items-center gap-1">
+            <a href="/page/search?q={{url}}">
+                <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Find">
+            </a>
+            <a href="https://web.archive.org/web/*/{{url}}">
+                <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Find in Wayback Machine">
+            </a>
+        </div>
+    </div>
 </div>
 
 <script>

@@ -89,6 +89,7 @@ class Crawler:
                     sleep_before_getting_html: float = 0,
                     sleep_network_timeout: float = 0):
 
+        u = URL(page.url)
         await webdriver_page.integrate(page)
         await asyncio.sleep(sleep_before_crawl)
 
@@ -101,7 +102,8 @@ class Crawler:
             await Screenshot().make_viewport(page, webdriver_page)
 
         if scroll_down:
-            await webdriver_page.scroll_down(scroll_down_max_cycles)
+            if u.fragment not in ['', None]:
+                await webdriver_page.scroll_down(scroll_down_max_cycles)
 
         await asyncio.sleep(sleep_before_getting_html)
         await webdriver_page._page.wait_for_timeout(sleep_network_timeout)

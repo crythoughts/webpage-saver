@@ -18,8 +18,14 @@
                         </div>
 
                         <div class="flex flex-col">
+                            {% if item.id == current_index %}
+                                <span>Is default</span>
+                            {% else %}
+                                <a class="text-slate-200" href="javascript:make_webdriver_default({{item.id}})">Make default</a>
+                            {% endif %}
+
                             <a class="text-slate-200" href="javascript:delete_webdriver({{item.id}})">Delete</a>
-                            <a class="text-slate-200" href="javascript:make_webdriver_default({{item.id}})">Make default</a>
+
                             <div>
                                 {% if item.is_running %}
                                     <span>Now running.</span>

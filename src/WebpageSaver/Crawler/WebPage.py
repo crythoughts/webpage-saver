@@ -16,7 +16,7 @@ class WebPage(BaseModel):
 
     # Page data
 
-    title: str = Field(default = None)
+    title: str = Field(default = 'Untitled')
     taken: float = Field(default = None)
 
     # HTTP
