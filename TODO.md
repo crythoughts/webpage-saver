@@ -11,11 +11,15 @@
 - [ ] forms submit
 - [ ] css url('') replacer
 
+**page info**
+
+- [ ] tag stats
+
 **downloader**
 
 - [x] make screenshots
 - [x] save assets
-- [ ] load page from html and browser extension
+- [x] load page from html and browser extension
 - [x] list of found encodings
 - [ ] screenshot canvases
 - [ ] 302 response
@@ -29,6 +33,7 @@
 
 - [x] webdriver downloader
 - [x] webdriver select
+- [ ] webdriver deletion
 
 **cache**
 

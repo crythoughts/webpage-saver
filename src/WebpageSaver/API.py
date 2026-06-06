@@ -57,7 +57,8 @@ class API:
     async def savePage(self, 
                        url: str, 
                        webdriver_id: int = None,
-                       link_pages: list[WebPage] = None):
+                       link_pages: list[WebPage] = None,
+                       remove_js: bool = False):
         # TODO: w selection
         crawler = Crawler()
 
@@ -83,6 +84,43 @@ class API:
         await crawler.crawl(page, browser_page)
 
         # Saving to cache
+        m = Page.fromModel(page, page.path_to)
+        m.save()
+
+        page.saveData()
+
+        payload.append(page.model_dump(exclude_none = True))
+
+        return payload
+
+    async def savePageByHTML(self, url: str, html: str, link_pages: list[WebPage] = None, title: str = None, remove_js: bool = True):
+        crawler = Crawler()
+        payload = list()
+        webdriver = self.w_repo.getDefault()
+        await webdriver.start()
+
+        page = WebPage(
+            url = url,
+            from_html = True
+        )
+        page.init(config.webpages_dir)
+
+        if link_pages:
+            for p in link_pages:
+                p.linked_pages.append(page.identify)
+                p.saveData()
+
+        browser_page = await webdriver.openPage(page)
+
+        await crawler.register(page, browser_page)
+        await crawler.prepareTab(page, browser_page, url = url, html = html, remove_js = remove_js)
+        await browser_page.goto(page.url)
+        await browser_page.integrate(page)
+        await crawler.crawl(page, browser_page)
+
+        if title != None:
+            page.title = title
+
         m = Page.fromModel(page, page.path_to)
         m.save()
 

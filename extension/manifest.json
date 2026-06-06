@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Webpage saver",
+  "version": "1.0",
+  "description": "Allows to save current page HTML",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:7514/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

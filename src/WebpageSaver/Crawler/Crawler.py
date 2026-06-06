@@ -3,6 +3,7 @@ from WebpageSaver.Crawler.WebPage import WebPage
 from WebpageSaver.Crawler.Webdrivers.WebdriverPage import WebdriverPage
 from WebpageSaver.Crawler.Screenshot import Screenshot
 from WebpageSaver.Crawler.Components.Increment import Increment
+from WebpageSaver.Crawler.Components.PageHTML import PageHTML
 from WebpageSaver.Crawler.Assets.Asset import Asset
 from datetime import datetime
 from yarl import URL
@@ -76,6 +77,30 @@ class Crawler:
 
         webdriver_page._page.on('request', _request)
         webdriver_page._page.on('response', _response)
+
+    async def prepareTab(self, page: WebPage, webdriver_page, url: str, html: str, remove_js: bool = True):
+        #await webdriver_page._page.evaluate("() => {document.write(`"+html+"`);}")
+        await webdriver_page._page.evaluate("() => {open = null; location.replace = null; history = null; location.reload = null; location.assign = null;}")
+        await webdriver_page._page.evaluate("() => {xhr = null; fetch = null;}")
+
+        _p = PageHTML.from_html(html)
+        _p.remove_integrity()
+
+        if remove_js:
+            _p.clear_js(softly = True)
+
+        async def handle_route(route, request):
+            if URL(request.url) == URL(url):
+                await route.fulfill(
+                    status=200,
+                    content_type="text/html",
+                    body=_p.prettify()
+                )
+                return
+            else:
+                await route.continue_()
+
+        await webdriver_page._page.route(url, handle_route)
 
     async def crawl(self, 
                     page: WebPage, 

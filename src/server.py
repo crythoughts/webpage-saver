@@ -12,6 +12,12 @@ import jinja2
 import urllib
 
 api = API()
+cors_headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+}
 
 routes = web.RouteTableDef()
 
@@ -372,14 +378,52 @@ async def sp(request: web.Request):
         ps = api.getPagesById(ids = [link_to], convert = False)
 
         if len(ps) == 0:
-            return web.HTTPNotFound(body = 'Not found page to link')
+            raise web.HTTPNotFound(body = 'Not found page to link')
 
     try:
         payload = await api.savePage(url = url, link_pages = ps)
     except Exception as e:
-        return web.Response(body = str(e), status = 500)
+        raise web.HTTPBadRequest(body = str(e), status = 500)
 
-    return web.json_response(payload)
+    return web.json_response(payload, headers = cors_headers)
+
+@routes.post('/api/pages/html_save')
+async def sp(request: web.Request):
+    inputs = await request.post()
+    html = inputs.get('html')
+    url = inputs.get('url')
+    remove_js = int(inputs.get('remove_js')) == 1
+    link_to = inputs.get('link_to')
+    title = inputs.get('title')
+
+    ps = None
+
+    if link_to != None:
+        ps = api.getPagesById(ids = [link_to], convert = False)
+
+        if len(ps) == 0:
+            return web.HTTPNotFound(body = 'Not found page to link')
+
+    try:
+        payload = await api.savePageByHTML(url = url,
+                                           html = html,
+                                           link_pages = ps,
+                                           title = title,
+                                           remove_js = remove_js
+        )
+    except Exception as e:
+        raise web.HTTPBadRequest(body = str(e))
+
+    return web.json_response(payload, headers = cors_headers)
+
+@routes.options('/api/pages/html_save')
+@routes.options('/api/pages/save')
+async def sp(request: web.Request):
+    return web.Response(
+        text = None,
+        content_type = 'application/json',
+        headers = cors_headers
+    )
 
 @routes.get('/api/pages')
 async def gp(request: web.Request):

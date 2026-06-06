@@ -24,6 +24,10 @@ class WebPage(BaseModel):
     status: int = Field(default = 200)
     redirected_to: str = Field(default = None) # identify
 
+    # App properties
+
+    from_html: bool = Field(default = False)
+
     # URLs
 
     url: str = Field()

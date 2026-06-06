@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 300px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block !important;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block !important;
+        }
+
+        .loading {
+            background-color: #fff3cd;
+            color: #856404;
+            display: block !important;
+        }
+
+        label {
+            padding: 12px;
+        }
+
+        input[type=text] {
+            padding: 5px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex;flex-direction: column; gap:2px;">
+        <h3>Saver</h3>
+        <label style="display:flex;gap:5px;align-items:center;">
+            <b>Host</b>
+            <input style="margin-left:6px;" type="text" value="127.0.0.1:7514" id="host">
+        </label>
+        <label>
+            <input type="checkbox" id="just_url">
+            Save by URL
+        </label>
+        <label>
+            <input checked type="checkbox" id="remove_js">
+            Remove JS
+        </label>
+        <button id="sendButton">Save page</button>
+        <div id="status"></div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

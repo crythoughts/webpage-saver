@@ -174,14 +174,22 @@ class PageHTML:
             for tag in self.bs.select(selector):
                 tag.decompose()
 
-    def clear_js(self):
+    def clear_js(self, softly: bool = False):
         logging.info('removing all js functions from tags and script tags')
 
         for tag in self.bs.select('script'):
-            tag.decompose()
+            if softly:
+                tag.name = 'scriptd'
+                tag['style'] = 'display:none;'
+            else:
+                tag.decompose()
 
         for tag in self.bs.select('noscript'):
-            tag.decompose()
+            if softly:
+                tag.name = 'noscriptd'
+                tag['style'] = 'display:none;'
+            else:
+                tag.decompose()
 
         for tag in self.bs.select('*'):
             attrs_to_remove = []
