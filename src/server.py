@@ -102,6 +102,7 @@ async def gpbid(request: web.Request):
             if query.get('original') != 'on':
                 html.make_correct_links(page)
 
+            html.trivia()
             #head_html = html.move_head()
 
             return web.Response(
@@ -202,6 +203,7 @@ async def gpbid(request: web.Request):
 @routes.get('/page/asset')
 async def gpa(request: web.Request):
     page_id = request.rel_url.query.get('id')
+    asset_url = request.rel_url.query.get('asset_url', None)
     path_id = request.rel_url.query.get('path', '')
     #path_id = urllib.parse.unquote(path_id)
 
@@ -210,7 +212,15 @@ async def gpa(request: web.Request):
         return web.HTTPNotFound(body = 'Not found page')
 
     page = pages[0]
-    req = page.getAssetById(path_id)
+    req = None
+
+    if asset_url != None:
+        _ = page.getAssetByUrl(asset_url)
+        path_id = _[0]
+        req = _[1]
+    else:
+        req = page.getAssetById(path_id)
+
     if req == None:
         return web.HTTPNotFound(body = 'Not found asset')
 
@@ -233,10 +243,15 @@ async def gpa(request: web.Request):
     if not file.is_file():
         return web.HTTPNotFound(text="Not found file")
 
-    return web.FileResponse(str(file), headers = {
+    h = {
         'Content-Disposition': f'inline; filename="{file_name}"',
-        'Content-Type': req.getContentType()
-    })
+        'Content-Type': req.getContentType(),
+    }
+
+    #if asset_url != None:
+    #    h.update(cors_headers)
+
+    return web.FileResponse(str(file), headers = h)
 
 @routes.get('/page/screenshot')
 def gpsbid(request):
@@ -418,6 +433,7 @@ async def sp(request: web.Request):
 
 @routes.options('/api/pages/html_save')
 @routes.options('/api/pages/save')
+#@routes.options('/page/asset')
 async def sp(request: web.Request):
     return web.Response(
         text = None,
@@ -449,6 +465,16 @@ async def epbid(request: web.Request):
     api.editPageById(ids = [page_id], new_taken = new_taken)
 
     return web.json_response({'success': 1})
+
+@routes.get('/sw.js')
+def swjs(request: web.Request):
+    return web.FileResponse(
+        config.cwd.joinpath('web').joinpath('static').joinpath('sw-replace.js'),
+        headers = {
+            'Service-Worker-Allowed': '/',
+            'Cache-Control': 'no-cache',
+        }
+    )
 
 async def main():
     host = config.get('server.host', '127.0.0.1')

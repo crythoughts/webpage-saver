@@ -7,6 +7,7 @@ from WebpageSaver.Crawler.Assets.Media import Media
 from WebpageSaver.Crawler.Assets.Link import Link
 from WebpageSaver.Crawler.Assets.URL import URL
 from WebpageSaver.Crawler.Assets.Script import Script
+from WebpageSaver.Crawler.Components.JSFunctions import getSW
 from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
 from typing import Generator
@@ -279,3 +280,9 @@ class PageHTML:
         _src.bs = BeautifulSoup(html, 'html.parser')
 
         return _src
+
+    def trivia(self):
+        s = self.bs.new_tag('script')
+        s.string = getSW()
+
+        self.bs.find('head').insert(0, s)
