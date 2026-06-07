@@ -8,6 +8,7 @@ from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 from WebpageSaver import config
 from yarl import URL
+from functools import cache
 import logging
 import json
 import shutil
@@ -58,6 +59,8 @@ class WebPage(BaseModel):
 
     assets_links: dict[int, GotRequest] = Field(default = {})
     linked_pages: list[str] = Field(default = [])
+
+    _cached_links = None
 
     def init(self, path: Path):
         self.root_directory = path
@@ -248,13 +251,29 @@ class WebPage(BaseModel):
     def getOrigAttr(self):
         return 'data-__orig'
 
-    def has_linked_pages(self):
-        return len(self.linked_pages) > 0
+    def linkPage(self, page):
+        self._cached_links = None
+        self.linked_pages.append(page.identify)
+
+    def findLinkedPageByUrl(self, url: str):
+        found = None
+        u = self.getRelativeURL(url)
+
+        for page in self.getLinkedPages():
+            if URL(page.url) == URL(u):
+                found = page
+
+                break
+
+        return found
 
     def getLinkedPages(self) -> Generator:
         from WebpageSaver.Cache import Page as DBPage
 
-        for itm in DBPage.select().where(DBPage.path_to.in_(self.linked_pages)).order_by(DBPage.taken_at.desc()):
+        if self._cached_links == None:
+            self._cached_links = DBPage.select().where(DBPage.path_to.in_(self.linked_pages)).order_by(DBPage.taken_at.desc())
+
+        for itm in self._cached_links:
             yield itm.toModel()
 
     def _selfCachedVersion(self):

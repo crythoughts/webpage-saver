@@ -46,7 +46,7 @@
         <span class="text-xl">{{page.url}}</span>
     </div>
 
-    {% if page.has_linked_pages() %}
+    {% if linked_count > 0 %}
     <div>
         <a class="text-xl" href="/page/{{page.identify}}?mode=linked">
             This page is connected with {{linked_count}} other pages.

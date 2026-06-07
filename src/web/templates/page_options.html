@@ -2,7 +2,6 @@
 
 {% block body %}
     <form class="p-5" method="get">
-        <input type="hidden" name="id", value="{{id}}">
         <input type="hidden" name="mode", value="page">
 
         <div class="flex gap-5">
@@ -48,6 +47,10 @@
                         <label>
                             <input type="checkbox" name="relay_sw">
                             Relay on SW
+                        </label>
+                        <label>
+                            <input checked type="checkbox" name="catch_clicks">
+                            Catch navigation and submit events
                         </label>
                     </div>
                 </div>

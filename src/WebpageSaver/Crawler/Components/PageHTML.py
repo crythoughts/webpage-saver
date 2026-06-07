@@ -7,7 +7,7 @@ from WebpageSaver.Crawler.Assets.Media import Media
 from WebpageSaver.Crawler.Assets.Link import Link
 from WebpageSaver.Crawler.Assets.URL import URL
 from WebpageSaver.Crawler.Assets.Script import Script
-from WebpageSaver.Crawler.Components.JSFunctions import getNavRemoveScript
+from WebpageSaver.Crawler.Components.JSFunctions import getNavRemoveScript, getLinksClickCatcherScript
 from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
 from typing import Generator
@@ -213,6 +213,12 @@ class PageHTML:
 
         self.bs.find('head').insert(0, s)
 
+    def add_catch_events(self, page: WebPage):
+        s = self.bs.new_tag('script')
+        s.string = getLinksClickCatcherScript(page)
+
+        self.bs.find('head').insert(0, s)
+
     def remove_inline_css(self):
         for tag in self.bs.find_all(attrs={"style": True}):
             del tag['style']
@@ -268,10 +274,15 @@ class PageHTML:
         for item in self.bs.select('a[href]'):
             _href = item.get('href')
             if _href:
-                if _href[0] == '#':
+                if URL.isAURL(_href) == False:
                     continue
 
-                item['href'] = '/page/{0}?mode=url&url={1}'.format(page.identify, Asset.encodeURL(_href))
+                potential_page = page.findLinkedPageByUrl(_href)
+
+                if potential_page:
+                    item['href'] = '/page/' + potential_page.identify
+                else:
+                    item['href'] = '/page/{0}?mode=url&url={1}'.format(page.identify, Asset.encodeURL(_href))
 
     def prettify(self, encoding: str = 'utf-8') -> str:
         return str(self.bs).encode(encoding = encoding)

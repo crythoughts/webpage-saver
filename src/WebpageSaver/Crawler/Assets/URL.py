@@ -20,3 +20,13 @@ class URL(Asset):
 
     def get_url(self):
         return self.value
+
+    @staticmethod
+    def isAURL(url: str):
+        if url[0] == '#':
+            return False
+
+        if url.startswith('javascript:'):
+            return False
+
+        return True

@@ -28,5 +28,49 @@ def getNavRemoveScript():
     location.assign = (url) => { console.log('tried to go to url ' + url) };
     '''
 
-def getLinksClickCatcherScript():
-    return ''''''
+def getLinksClickCatcherScript(page):
+    return '''document.addEventListener("click", (e) => {
+        console.log("Link click: ", e)
+
+        const t = e.target;
+
+        if (t.tagName == 'A') {
+            if (t.href && t.href.startsWith(location.origin) == false) {
+                e.preventDefault();
+
+                const u = new URL(location.pathname);
+                u.searchParams.set("mode", "url");
+                u.searchParams.set("url", t.href);
+                location.href = String(u);
+            };
+        };
+    });
+    document.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        console.log("Form submit: ", e);
+
+        const url = "'''+page.url+'''";
+        const t = e.target;
+        const f = new FormData(t);
+        const g = new URLSearchParams(f).toString();
+        const method = t.method;
+        let action = t.getAttribute("action");
+
+        if (action && (method == "get" || method == "GET")) {
+            if (!action.includes(location.origin)) {
+                let u = new URL(url);
+                u.pathname = action;
+                u.search = g.toString(); 
+
+                action = u.toString();
+            }
+
+            if (confirm("Submit form " + action + " ?")) {
+                location.href = "/page/'''+page.identify+'''?mode=url&url=" + action;
+            }
+        } else {
+            e.preventDefault();
+        }
+    })
+    '''

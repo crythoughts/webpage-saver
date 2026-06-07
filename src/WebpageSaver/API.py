@@ -74,8 +74,9 @@ class API:
 
         if link_pages:
             for p in link_pages:
-                p.linked_pages.append(page.identify)
+                p.linkPage(page)
                 p.saveData()
+                page.linkPage(p)
 
         browser_page = await webdriver.openPage(page)
 
@@ -111,8 +112,9 @@ class API:
 
         if link_pages:
             for p in link_pages:
-                p.linked_pages.append(page.identify)
+                p.linkPage(page)
                 p.saveData()
+                page.linkPage(p)
 
         browser_page = await webdriver.openPage(page)
 

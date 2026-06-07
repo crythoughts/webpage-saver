@@ -222,6 +222,8 @@ async def gpbid(request: web.Request):
                 html.remove_meta()
             if query.get('remove_funcs', 'on') == 'on':
                 html.add_nav_remove_script()
+            if query.get('catch_clicks', 'on') == 'on':
+                html.add_catch_events(page)
 
             try:
                 if query.get('remove_selectors') != None:
