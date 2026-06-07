@@ -1,13 +1,16 @@
 from WebpageSaver.API import API
 from WebpageSaver.Crawler.Assets.Asset import Asset
-from aiohttp import web
 from WebpageSaver import config
 from WebpageSaver.Crawler.Components.PageHTML import PageHTML
+from WebpageSaver.Display.AssetDisplayer import asset_displayer
+from WebpageSaver.Crawler.Components.JSFunctions import getSW
+from yarl import URL
 from pathlib import Path
 from datetime import datetime
 import asyncio
 import logging
 import aiohttp_jinja2
+from aiohttp import web
 import jinja2
 import urllib
 
@@ -32,7 +35,22 @@ def check_path(maximum_directory: Path, path: Path):
 
 @routes.get('/')
 def ip(request: web.Request):
-    return aiohttp_jinja2.render_template('@index.html',request,{})
+    return aiohttp_jinja2.render_template('@index.html',request,{
+        'sw_js': getSW()
+    })
+
+@routes.get('/settings')
+@routes.post('/settings')
+async def settings(request: web.Request):
+    if request.method == 'POST':
+        data = await request.post()
+        navigation_save = data.get('a')
+
+        config.set('navigation_save', int(navigation_save == 'on'))
+
+    return aiohttp_jinja2.render_template('@settings.html', request, {
+        'config': config
+    })
 
 @routes.get('/page')
 async def gpbid_wmi(request: web.Request):
@@ -53,9 +71,6 @@ async def gpbid(request: web.Request):
     page_id = request.match_info.get('id')
     mode = query.get('mode', 'page')
 
-    if mode not in ['page', 'page_options', 'text', 'all_assets', 'url', 'meta', 'metatags', 'media', 'hyperlinks']:
-        return web.HTTPNotFound(body = 'Invalid mode')
-
     pages = api.getPagesById(ids = [page_id], convert = False)
     if len(pages) == 0:
         return web.Response(status = 404)
@@ -67,50 +82,6 @@ async def gpbid(request: web.Request):
         encoding = query.get('encoding')
 
     match (mode):
-        # Page display
-        case 'page' | 'text':
-
-            if mode == 'text':
-                query['remove_scripts'] = 'on'
-                query['remove_inline_css'] = 'on'
-                query['remove_styles'] = 'on'
-                query['remove_iframes'] = 'on'
-                query['remove_meta'] = 'on'
-                query['remove_selectors'] = 'nav, header, input, button'
-
-            text = page.getRootFile().read_text(encoding = encoding)
-            html = PageHTML.from_html(text)
-
-            if query.get('remove_scripts') == 'on':
-                html.clear_js()
-            if query.get('remove_inline_css') == 'on':
-                html.remove_inline_css()
-                html.remove_html_stylization()
-            if query.get('remove_styles') == 'on':
-                html.remove_css()
-            if query.get('remove_iframes') == 'on':
-                html.remove_iframes()
-            if query.get('remove_meta') == 'on':
-                html.remove_meta()
-
-            try:
-                if query.get('remove_selectors') != None:
-                    html.remove_selectors(query.get('remove_selectors'))
-            except:
-                pass
-
-            if query.get('original') != 'on':
-                html.make_correct_links(page)
-
-            html.trivia()
-            #head_html = html.move_head()
-
-            return web.Response(
-                body = html.prettify(encoding = encoding), 
-                content_type='text/html',
-                charset = encoding
-            )
-
         case 'page_options':
 
             return aiohttp_jinja2.render_template('page_options.html', request, {
@@ -124,13 +95,26 @@ async def gpbid(request: web.Request):
             return aiohttp_jinja2.render_template('page_info.html', request, {
                 'page': page,
                 'taken': page.getReadableTaken(),
-                'linked': page.getLinkedPages()
+                'linked_count': len(page.linked_pages),
             })
 
         case 'url':
+
             p_url = query.get('url')
             new_url = Asset.getDecodedURL(p_url)
             redirect_url = page.getRelativeURL(new_url)
+
+            if config.get('navigation_save') == 1:
+                logging.info('navigation_save=1, ref {0}, url {1}'.format(page_id, new_url))
+
+                payload = None
+                try:
+                    payload = await api.savePage(url = redirect_url, link_pages = [page], conv = False)
+                except Exception as e:
+                    raise web.HTTPBadRequest(str(e))
+
+                u = URL(request.url).with_name(payload[0].identify)
+                return web.HTTPFound(location = str(u))
 
             return aiohttp_jinja2.render_template('url.html', request, {
                 'url': redirect_url,
@@ -163,7 +147,7 @@ async def gpbid(request: web.Request):
             text = page.getRootFile().read_text(encoding = encoding)
             html = PageHTML.from_html(text)
             if query.get('original') != 'on':
-                html.make_correct_links(page, remove_temporary_attrs = False)
+                html.make_local_links_to_assets(page, remove_temporary_attrs = False)
 
             selectors = None
 
@@ -192,7 +176,7 @@ async def gpbid(request: web.Request):
             text = page.getRootFile().read_text(encoding = encoding)
             html = PageHTML.from_html(text)
             if rel == 'on':
-                html.make_correct_links(page)
+                html.make_local_links_to_assets(page)
 
             return aiohttp_jinja2.render_template('hyperlinks.html', request, {
                 'urls': html.get_urls(page, keep_original_urls = rel == 'off'),
@@ -200,12 +184,72 @@ async def gpbid(request: web.Request):
                 'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
+        case 'linked':
+
+            pages = list(page.linked_pages)
+
+            return aiohttp_jinja2.render_template('linked_pages.html', request, {
+                'page': page,
+                'back_btn': '/page/' + page_id + '?mode=meta',
+                'linked': page.getLinkedPages(),
+                'count': len(pages)
+            })
+
+        # Page display
+        case _:
+
+            if mode == 'text':
+                query['remove_scripts'] = 'on'
+                query['remove_inline_css'] = 'on'
+                query['remove_styles'] = 'on'
+                query['remove_iframes'] = 'on'
+                query['remove_meta'] = 'on'
+                query['remove_selectors'] = 'nav, header, input, button'
+
+            text = page.getRootFile().read_text(encoding = encoding)
+            html = PageHTML.from_html(text)
+
+            if query.get('remove_scripts') == 'on':
+                html.clear_js()
+            if query.get('remove_inline_css') == 'on':
+                html.remove_inline_css()
+                html.remove_html_stylization()
+            if query.get('remove_styles') == 'on':
+                html.remove_css()
+            if query.get('remove_iframes') == 'on':
+                html.remove_iframes()
+            if query.get('remove_meta') == 'on':
+                html.remove_meta()
+            if query.get('remove_funcs', 'on') == 'on':
+                html.add_nav_remove_script()
+
+            try:
+                if query.get('remove_selectors') != None:
+                    html.remove_selectors(query.get('remove_selectors'))
+            except:
+                pass
+
+            if query.get('relay_sw') != 'on':
+                html.make_local_links_to_assets(page)
+
+            if query.get('original_links') != 'on':
+                html.make_links_local(page)
+
+            #head_html = html.move_head()
+
+            return web.Response(
+                body = html.prettify(encoding = encoding), 
+                content_type='text/html',
+                charset = encoding
+            )
+
 @routes.get('/page/asset')
 async def gpa(request: web.Request):
-    page_id = request.rel_url.query.get('id')
-    asset_url = request.rel_url.query.get('asset_url', None)
-    path_id = request.rel_url.query.get('path', '')
-    #path_id = urllib.parse.unquote(path_id)
+    query = request.rel_url.query
+
+    page_id = query.get('id')
+    asset_url = query.get('asset_url', None)
+    path_id = query.get('path', '')
 
     pages = api.getPagesById(ids = [page_id], convert = False)
     if len(pages) == 0:
@@ -215,7 +259,13 @@ async def gpa(request: web.Request):
     req = None
 
     if asset_url != None:
+        asset_url = urllib.parse.unquote(asset_url)
         _ = page.getAssetByUrl(asset_url)
+
+        # Not found 
+        if _ == None:
+            return asset_displayer.getResponseByContentType(query.get('content_type'))
+
         path_id = _[0]
         req = _[1]
     else:

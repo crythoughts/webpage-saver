@@ -20,7 +20,7 @@ self.addEventListener('fetch', async event => {
     let v0 = null;
     let nu = null;
 
-    console.log('Got request:', request)
+    // console.log('Got request:', request)
 
     event.respondWith(
         (async () => {
@@ -35,6 +35,7 @@ self.addEventListener('fetch', async event => {
             nu = new URL(v0.origin + '/page/asset')
             nu.searchParams.set('id', v2);
             nu.searchParams.set('asset_url', request.url);
+            nu.searchParams.set('content_type', request.headers.get("Content-Type"));
 
             return fetch(String(nu), {
                 mode: 'cors',

@@ -1,6 +1,7 @@
 {% extends '@page.html' %}
 
 {% block page %}
+    <script>{{sw_js|safe}}</script>
     <div class="w-full h-screen flex flex-col justify-center items-center">
         <div class="logo pb-4">
             <a class="text-3xl">Webpage Saver</a>
@@ -17,6 +18,7 @@
             <ul class="flex flex-col gap-2 items-center">
                 <li><a href="/save">Save</a></li>
                 <li><a href="/webdrivers">Webdrivers</a></li>
+                <li><a href="/settings">Settings</a></li>
             </ul>
         </div>
     </div>

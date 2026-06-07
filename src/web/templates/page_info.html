@@ -46,25 +46,19 @@
         <span class="text-xl">{{page.url}}</span>
     </div>
 
+    {% if page.has_linked_pages() %}
+    <div>
+        <a class="text-xl" href="/page/{{page.identify}}?mode=linked">
+            This page is connected with {{linked_count}} other pages.
+        </a>
+    </div>
+    {% endif %}
+
     <div class="pt-5">
         <div>
             <a href="javascript:deletePage('{{page.identify}}')" style="color:red;">Delete</a>
         </div>
     </div>
-
-    {% if page.has_linked_pages() %}
-    <div>
-        <p class="text-xl">This page is connected with:</p>
-
-        <div class="flex flex-col">
-            {% for itm in linked %}
-            <div>
-                <a title="{{itm.url}}" href="/page/{{itm.identify}}">{{itm.title}}</a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
 
 </div>
 

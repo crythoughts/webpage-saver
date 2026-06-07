@@ -17,3 +17,16 @@ def getRedirectBlocker():
 
 def getXHRBlocker():
     return '''() => {xhr = null; fetch = null;}'''
+
+def getNavRemoveScript():
+    return '''
+    window.open = (url) => {console.log('tried to open ' + url)};
+    location.replace = () => { };
+    history.pushState = () => { };
+    history.replaceState = () => { };
+    location.reload = () => { console.log('tried to reload') };
+    location.assign = (url) => { console.log('tried to go to url ' + url) };
+    '''
+
+def getLinksClickCatcherScript():
+    return ''''''

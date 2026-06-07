@@ -58,7 +58,8 @@ class API:
                        url: str, 
                        webdriver_id: int = None,
                        link_pages: list[WebPage] = None,
-                       remove_js: bool = False):
+                       remove_js: bool = False,
+                       conv: bool = True):
         # TODO: w selection
         crawler = Crawler()
 
@@ -89,7 +90,10 @@ class API:
 
         page.saveData()
 
-        payload.append(page.model_dump(exclude_none = True))
+        if conv:
+            payload.append(page.model_dump(exclude_none = True))
+        else:
+            payload.append(page)
 
         return payload
 

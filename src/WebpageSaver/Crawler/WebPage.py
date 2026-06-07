@@ -101,6 +101,9 @@ class WebPage(BaseModel):
 
         return self.identify
 
+    def getScreenshotURL(self, filename: str = 'viewport.jpeg'):
+        return '/page/screenshot?id={0}&file={1}'.format(self.identify, filename)
+
     def getDir(self) -> Path:
         '''
         Returns directory of the page in storage.
@@ -171,10 +174,9 @@ class WebPage(BaseModel):
         '''
         Unwraps asset by its URL
         '''
+
         for itm in self.assets_links.items():
-            if itm[1].url == url:
-                return (itm[0], itm[1])
-            if itm[1].url == Asset.getDecodedURL(url):
+            if itm[1].asset.compare_urls(url):
                 return (itm[0], itm[1])
 
     def getAssetPathById(self, index: int):
@@ -186,28 +188,44 @@ class WebPage(BaseModel):
     def addAsset(self, ident: int, request: GotRequest):
         self.assets_links[ident] = request
 
-    def getRelativeURL(self, url: str):
+    def getRelativeURL(self, url: str, ignore_host_errors: bool = False):
+        u1 = URL(url)
+        relative_url = str(self.relative_url)
+
         if not url.startswith('http') and url.startswith('data:') == True:
             return url
 
         # May be a subdomain or full link
-        if url.startswith(self.relative_url) or url.startswith('http'):
+        if url.startswith(relative_url) or url.startswith('http'):
             return url
-    
+
         # Relative urls. WORKAROUND
         if url.startswith('..'):
             return URL(self.url).joinpath(url).human_repr()
 
-        if self.relative_url[-1] == '/':
-            self.relative_url[-1] = ''
+        if relative_url[-1] == '/':
+            relative_url[-1] = ''
+
+        if u1.host == None:
+            if url == None or len(url) == 0:
+                return relative_url
+
+            if url[0] == '/':
+                return relative_url + url
+            else:
+                return relative_url + '/' + url
+
+        # Not belongs to domain of this page
+        if URL(relative_url).host != URL(url).host and ignore_host_errors == False:
+            return url
 
         if len(url) > 0:
             if url[0] == '/':
-                return self.relative_url + url
+                return relative_url + url
             else:
-                return self.relative_url + '/' + url
+                return relative_url + '/' + url
         else:
-            return self.relative_url
+            return relative_url
 
         #return URL(self.relative_url).(url).human_repr()
 

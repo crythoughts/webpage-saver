@@ -1,6 +1,7 @@
 from pydantic import Field, BaseModel, ConfigDict
 from typing import Any
 from WebpageSaver import app
+from yarl import URL
 import urllib
 import logging
 import aiohttp
@@ -41,6 +42,15 @@ class Asset(BaseModel):
 
             _node[page.getKeyAttr()] = _key
             _node[_key] = ''
+
+    def compare_urls(self, url: str) -> bool:
+        # it can be made better!
+        if URL(self.url) == URL(url):
+            return True
+        if self.url == Asset.getDecodedURL(url):
+            return True
+
+        return False
 
     def decompose(self):
         self.bs_node.decompose()

@@ -7,7 +7,7 @@ from WebpageSaver.Crawler.Assets.Media import Media
 from WebpageSaver.Crawler.Assets.Link import Link
 from WebpageSaver.Crawler.Assets.URL import URL
 from WebpageSaver.Crawler.Assets.Script import Script
-from WebpageSaver.Crawler.Components.JSFunctions import getSW
+from WebpageSaver.Crawler.Components.JSFunctions import getNavRemoveScript
 from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
 from typing import Generator
@@ -207,6 +207,12 @@ class PageHTML:
             tag.attrs = {key:value for key,value in tag.attrs.items()
                     if key not in attrs_to_remove}
 
+    def add_nav_remove_script(self):
+        s = self.bs.new_tag('script')
+        s.string = getNavRemoveScript()
+
+        self.bs.find('head').insert(0, s)
+
     def remove_inline_css(self):
         for tag in self.bs.find_all(attrs={"style": True}):
             del tag['style']
@@ -227,7 +233,7 @@ class PageHTML:
         for tag in self.bs.find_all(attrs={"integrity": True}):
             del tag['integrity']
 
-    def make_correct_links(self, page: WebPage, remove_temporary_attrs: bool = True):
+    def make_local_links_to_assets(self, page: WebPage, remove_temporary_attrs: bool = True):
         for item in self.bs.select('link[href]'):
             if item.get(page.getOrigAttr()) != None:
                 continue
@@ -254,6 +260,7 @@ class PageHTML:
 
             item[_key] = _id[1].asset.getLocalURL(page, _id[0])
 
+    def make_links_local(self, page: WebPage):
         for item in self.bs.select('meta[http-equiv]'):
             item.decompose()
 
@@ -280,9 +287,3 @@ class PageHTML:
         _src.bs = BeautifulSoup(html, 'html.parser')
 
         return _src
-
-    def trivia(self):
-        s = self.bs.new_tag('script')
-        s.string = getSW()
-
-        self.bs.find('head').insert(0, s)
