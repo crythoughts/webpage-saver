@@ -5,8 +5,10 @@ from WebpageSaver.Crawler.Screenshot import Screenshot
 from WebpageSaver.Crawler.Components.Increment import Increment
 from WebpageSaver.Crawler.Components.PageHTML import PageHTML
 from WebpageSaver.Crawler.Assets.Asset import Asset
+from WebpageSaver.Cache import Cache, Page
 from datetime import datetime
 from yarl import URL
+from WebpageSaver import config
 import asyncio
 import logging
 
@@ -191,3 +193,51 @@ class Crawler:
 
     async def _after_crawl(self, page: WebPage):
         pass
+
+    async def sendPage(self, page: WebPage, webdriver, link_pages: list[WebPage]):
+        if link_pages:
+            for p in link_pages:
+                p.linkPage(page)
+                p.saveData()
+                page.linkPage(p)
+
+        got_page = None
+        has_redir = False
+
+        browser_page = await webdriver.openPage(page)
+        await self.register(page, browser_page)
+        await browser_page.goto(page.url)
+
+        # After "GOTO"
+        # It will skip other stages of redirect (if they are more than 1), but anyway.
+        if str(browser_page.getStatus())[0] == '3':
+            logging.log('URL redirected')
+
+            got_page = WebPage(
+                url = browser_page.getResponseURL(),
+                title = 'Redirect',
+                status = 200, # ig
+                identify = page.identify
+            )
+            got_page.init(config.webpages_dir)
+            #got_page.linkPage(page)
+            page.linkPage(got_page)
+            has_redir = True
+        else:
+            got_page = page
+            got_page.status = browser_page.getStatus()
+
+        await browser_page.integrate(page)
+        await self.crawl(page, browser_page)
+
+        if has_redir == True:
+            self._savePageToCache(page)
+
+        self._savePageToCache(got_page)
+
+        return got_page
+
+    def _savePageToCache(self, page: WebPage):
+        m = Page.fromModel(page, page.path_to)
+        m.save()
+        page.saveData()

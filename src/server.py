@@ -293,7 +293,7 @@ async def gpa(request: web.Request):
 
     if asset_url != None:
         asset_url = urllib.parse.unquote(asset_url)
-        _ = page.getAssetByUrl(asset_url)
+        _ = page.getAssetByUrl(asset_url, query.get('content_type'))
 
         # Not found 
         if _ == None:

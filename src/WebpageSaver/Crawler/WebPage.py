@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Generator
 from datetime import datetime
 from pathlib import Path
-from WebpageSaver.Crawler.Assets.Asset import Asset
 from WebpageSaver.Crawler.Assets.Meta import Meta
 from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
@@ -28,6 +27,7 @@ class WebPage(BaseModel):
     # App properties
 
     from_html: bool = Field(default = False)
+    is_iframe: bool = Field(default = False)
 
     # URLs
 
@@ -173,13 +173,19 @@ class WebPage(BaseModel):
         for i, v in self.assets_links.items():
             yield v
 
-    def getAssetByUrl(self, url: str):
+    def getAssetByUrl(self, url: str, content_type: str = None):
         '''
         Unwraps asset by its URL
         '''
 
         for itm in self.assets_links.items():
-            if itm[1].asset.compare_urls(url):
+            if itm[1].compare_urls(url, self):
+                return (itm[0], itm[1])
+
+        # 2nd time
+        # helpful for relative URLS from CSS files
+        for itm in self.assets_links.items():
+            if itm[1].compare_urls(url, self, second_time = True, content_type = content_type):
                 return (itm[0], itm[1])
 
     def getAssetPathById(self, index: int):

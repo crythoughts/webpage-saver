@@ -35,6 +35,12 @@ class WebdriversRepo:
     def getAll(self):
         return self._list
 
+    def getById(self, ids: int = None):
+        try:
+            return self._list[ids]
+        except:
+            return self.getDefault()
+
     def getDefault(self) -> Webdriver:
         return list(self.getAll())[self._getCurrentWebdriverIndex()]
 

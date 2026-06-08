@@ -7,6 +7,7 @@ from WebpageSaver.Cache import Cache, Page
 from WebpageSaver.Crawler.Components.Utils import toURLWithoutMeaninglessDiffs
 from yarl import URL
 from peewee import fn
+import logging
 
 cache = Cache()
 
@@ -66,7 +67,7 @@ class API:
         crawler = Crawler()
 
         payload = list()
-        webdriver = self.w_repo.getDefault()
+        webdriver = self.w_repo.getById(webdriver_id)
         await webdriver.start()
 
         page = WebPage(
@@ -74,33 +75,21 @@ class API:
         )
         page.init(config.webpages_dir)
 
-        if link_pages:
-            for p in link_pages:
-                p.linkPage(page)
-                p.saveData()
-                page.linkPage(p)
-
-        browser_page = await webdriver.openPage(page)
-
-        await crawler.register(page, browser_page)
-        await browser_page.goto(page.url)
-        await browser_page.integrate(page)
-        await crawler.crawl(page, browser_page)
-
-        # Saving to cache
-        m = Page.fromModel(page, page.path_to)
-        m.save()
-
-        page.saveData()
+        fnl_page = await crawler.sendPage(page, webdriver, link_pages)
 
         if conv:
-            payload.append(page.model_dump(exclude_none = True))
+            payload.append(fnl_page.model_dump(exclude_none = True))
         else:
-            payload.append(page)
+            payload.append(fnl_page)
 
         return payload
 
-    async def savePageByHTML(self, url: str, html: str, link_pages: list[WebPage] = None, title: str = None, remove_js: bool = True):
+    # TODO rework
+    async def savePageByHTML(self, url: str,
+                            html: str, 
+                            link_pages: list[WebPage] = None, 
+                            title: str = None, 
+                            remove_js: bool = True):
         crawler = Crawler()
         payload = list()
         webdriver = self.w_repo.getDefault()

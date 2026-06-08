@@ -28,3 +28,27 @@ class GotRequest(BaseModel):
 
     def url_matches(self, url: str):
         return URL(url) == URL(self.url)
+
+    def compare_urls(self, url: str, page, second_time: bool = False, content_type: str = None) -> bool:
+        # it can be made better!
+
+        # TODO remove when better solution will be found
+        if second_time:
+            if url in self.asset.url:
+                #print(content_type, self.getContentType())
+
+                if content_type in self.getContentType():
+                    return True # not True but TRUE!!!!!!
+
+                return True
+
+        if URL(page.getRelativeURL(self.asset.url)) == URL(page.getRelativeURL(url)):
+            return True
+
+        if URL(self.asset.url) == URL(url):
+            return True
+
+        if self.url == Asset.getDecodedURL(url):
+            return True
+
+        return False

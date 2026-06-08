@@ -122,3 +122,9 @@ class WebdriverPage:
 
     def get(self):
         return self._page
+
+    def getStatus(self):
+        return self._page_response.status
+
+    def getResponseURL(self) -> str:
+        return self._page_response.url
