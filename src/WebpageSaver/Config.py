@@ -8,14 +8,15 @@ class Config:
         self.parent = self.cwd.parent
         self.data = self.parent.joinpath('data')
         self.data.mkdir(exist_ok=True)
+        self.content = self.data.joinpath('content')
+        self.content.mkdir(exist_ok=True)
         self.drivers = self.data.joinpath('drivers')
         self.drivers.mkdir(exist_ok=True)
 
-        self.webpages_dir = self.data.joinpath('webpages')
-        self.webpages_dir.mkdir(exist_ok=True)
+        self._setothers()
 
         self.file = self.data.joinpath('conf.json')
-        self.cache = self.data.joinpath('cache.json')
+        #self.cache = self.data.joinpath('cache.json')
         if self.file.exists() == False:
             tmp = open(str(self.file), 'w', encoding = 'utf-8')
             default_settings = dict()
@@ -25,6 +26,15 @@ class Config:
 
         self._stream = open(self.file, 'r+', encoding='utf-8')
         self.updateFromFile()
+
+        if self.get('pages_dir'):
+            self.content = Path(self.get('pages_dir'))
+            assert self.content.is_dir() and self.content.exists(), 'not a dir or not exists.'
+            self._setothers()
+
+    def _setothers(self):
+        self.webpages_dir = self.content.joinpath('webpages')
+        self.webpages_dir.mkdir(exist_ok=True)
 
     def __del__(self):
         try:

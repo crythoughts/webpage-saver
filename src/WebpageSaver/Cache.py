@@ -8,7 +8,7 @@ from yarl import URL
 import logging
 import json
 
-db = SqliteDatabase(str(config.data.joinpath('cache.db')))
+db = SqliteDatabase(str(config.content.joinpath('cache.db')))
 
 class BaseModel(Model):
     class Meta:

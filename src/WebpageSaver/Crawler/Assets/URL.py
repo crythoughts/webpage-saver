@@ -26,7 +26,9 @@ class URL(Asset):
         if url[0] == '#':
             return False
 
-        if url.startswith('javascript:'):
-            return False
+        # TODO add a better check
+        for protocol in ['tg', 'javascript', 'email', 'phone', 'steam']:
+            if url.startswith(protocol+':'):
+                return False
 
         return True

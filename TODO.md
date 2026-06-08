@@ -8,8 +8,8 @@
 **viewer**
 
 - [ ] detect if link javascript: or normal
-- [ ] forms submit
-- [ ] css url('') replacer
+- [x] forms submit
+- [x] css url('') replacer
 
 **page info**
 
@@ -24,10 +24,10 @@
 - [ ] screenshot canvases
 - [ ] 302 response
 - [ ] iframes
+- [ ] shadow dom support
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
-- [ ] do something with pages that occurs errors
 
 **webdrivers**
 
@@ -37,4 +37,4 @@
 
 **cache**
 
-- [ ] save url without http / https differences
+- [x] save url without http / https differences
