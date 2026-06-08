@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from peewee import *
 from WebpageSaver import config
 from WebpageSaver.Crawler.WebPage import WebPage
+from WebpageSaver.Crawler.Components.Utils import toURLWithoutMeaninglessDiffs
 from yarl import URL
 import logging
 import json
@@ -28,7 +29,9 @@ class Page(BaseModel):
         new = Page()
         new.title = model.title
         new.path_to = path_to
-        new.url = u.human_repr()
+
+        # Removing protocol and "//"
+        new.url = toURLWithoutMeaninglessDiffs(model.url)
 
         if u.host.startswith('www.'):
             new.domain = u.host[4:]

@@ -3,13 +3,13 @@
 {% block body %}
 
 <div class="p-5 flex flex-col gap-5">
+    <div class="text-center">
+        <b>You went to this URL that wasn't archived by this app from this page:</b>
+    </div>
     <div class="flex justify-center items-center">
         <span>{{url}}</span>
     </div>
     <div class="flex gap-2 justify-center">
-        <a href="javascript:history.back()">
-            <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Back">
-        </a>
         <a href="{{url}}">
             <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Show original">
         </a>
@@ -25,6 +25,24 @@
             </a>
         </div>
     </div>
+    {% if possible_pages_count > 0 %}
+        <div class="text-center">
+            <b>Possible pages:</b>
+        </div>
+        <div class="flex gap-2 flex-col">
+            {% for itm in possible_pages %}
+                <a class="grid grid-cols-[0fr_1fr] gap-5 items-center" href="/page/{{itm.identify}}" title="{{itm.url}}">
+                    <div class="w-15 h-8">
+                        <img src="{{itm.getScreenshotURL()}}">
+                    </div>
+                    <div>
+                        <b>{{itm.title}}</b>
+                        <span>{{itm.getReadableTaken()}}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 
 <script>

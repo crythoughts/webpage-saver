@@ -2,12 +2,24 @@
 
 {% block body %}
     <div class="p-5">
-        <form method="POST" class="flex flex-col items-center w-full">
+        <form method="POST" class="flex flex-col w-full pl-[20%] pr-[20%]">
+            <b class="text-xl">Page display</b>
+
             <div>
+                <b>On links clicking</b>
+            </div>
+            <div class="flex flex-col">
                 <label>
                     <input type="checkbox" name="a"{% if config.get('navigation_save') == 1 %} checked{% endif %}>
-                    Automatically save pages when navigating within saved page
+                    Automatically save pages
                 </label>
+                <label>
+                    <input type="checkbox" name="b"{% if config.get('navigation_first_found', 1) == 1 %} checked{% endif %}>
+                    Go to the first found page (with nearest creation date) if it not presented in found pages
+                </label>
+            </div>
+            <b class="text-xl">Saving</b>
+            <div>
                 <div>
                     Default webdriver:
                     {{config.get('webdrivers.current')}}

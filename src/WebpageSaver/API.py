@@ -4,7 +4,9 @@ from WebpageSaver.Crawler.WebPage import WebPage
 from WebpageSaver.Crawler.Crawler import Crawler
 from WebpageSaver import config
 from WebpageSaver.Cache import Cache, Page
+from WebpageSaver.Crawler.Components.Utils import toURLWithoutMeaninglessDiffs
 from yarl import URL
+from peewee import fn
 
 cache = Cache()
 
@@ -147,6 +149,18 @@ class API:
         payload = list()
         for item in Page.select().where(Page.path_to.in_(ids)):
             if convert == True:
+                payload.append(item.toModel().dump())
+            else:
+                payload.append(item.toModel())
+
+        return payload
+
+    def getPagesByURL(self, url: str, approximate_max_time: float, conv: bool = True) -> list[WebPage]:
+        payload = list()
+        items = Page.select().where(Page.url == toURLWithoutMeaninglessDiffs(url)).order_by(fn.ABS(Page.taken_at - approximate_max_time))
+
+        for item in items:
+            if conv:
                 payload.append(item.toModel().dump())
             else:
                 payload.append(item.toModel())

@@ -1,6 +1,11 @@
 {% extends '@layout.html' %}
 
 {% block body %}
+    {% if error %}
+        <div class="p-5 bg-red-200">
+            <span>{{error}}</span>
+        </div>
+    {% endif %}
     <form class="p-5" method="get">
         <input type="hidden" name="mode", value="page">
 

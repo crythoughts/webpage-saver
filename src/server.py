@@ -4,6 +4,7 @@ from WebpageSaver import config
 from WebpageSaver.Crawler.Components.PageHTML import PageHTML
 from WebpageSaver.Display.AssetDisplayer import asset_displayer
 from WebpageSaver.Crawler.Components.JSFunctions import getSW
+
 from yarl import URL
 from pathlib import Path
 from datetime import datetime
@@ -44,9 +45,9 @@ def ip(request: web.Request):
 async def settings(request: web.Request):
     if request.method == 'POST':
         data = await request.post()
-        navigation_save = data.get('a')
 
-        config.set('navigation_save', int(navigation_save == 'on'))
+        config.set('navigation_save', int(data.get('a') == 'on'))
+        config.set('navigation_first_found', int(data.get('b') == 'on'))
 
     return aiohttp_jinja2.render_template('@settings.html', request, {
         'config': config
@@ -77,6 +78,9 @@ async def gpbid(request: web.Request):
 
     page = pages[0]
     # Encoding
+    errors_descriptions = {
+        'encoding': 'Decoding error occured. Try to choose another encoding (or choose utf-8).'
+    }
     encoding = page.encoding
     if query.get('encoding') != None:
         encoding = query.get('encoding')
@@ -84,10 +88,13 @@ async def gpbid(request: web.Request):
     match (mode):
         case 'page_options':
 
+            error = query.get('error')
+
             return aiohttp_jinja2.render_template('page_options.html', request, {
                 'page': page,
                 'id': page_id,
-                'back_btn': '/page/' + page_id + '?mode=meta'
+                'back_btn': '/page/' + page_id + '?mode=meta',
+                'error': errors_descriptions.get(error),
             })
 
         case 'meta':
@@ -104,22 +111,42 @@ async def gpbid(request: web.Request):
             new_url = Asset.getDecodedURL(p_url)
             redirect_url = page.getRelativeURL(new_url)
 
-            if config.get('navigation_save') == 1:
-                logging.info('navigation_save=1, ref {0}, url {1}'.format(page_id, new_url))
+            candidates_to_redirect = api.getPagesByURL(redirect_url, page.taken, conv = False)
 
-                payload = None
-                try:
-                    payload = await api.savePage(url = redirect_url, link_pages = [page], conv = False)
-                except Exception as e:
-                    raise web.HTTPBadRequest(str(e))
+            if config.get('navigation_first_found', 1) == 1 and len(candidates_to_redirect) > 0:
+                logging.info('navigation_first_found=1, ref {0}, url {1}, redir to {2}'.format(page_id, new_url, candidates_to_redirect[0].identify))
 
-                u = URL(request.url).with_name(payload[0].identify)
+                u = URL(request.url).with_name(candidates_to_redirect[0].identify)
+
                 return web.HTTPFound(location = str(u))
+
+            do_nav_save = True
+            # Automatically saving page
+            if config.get('navigation_save') == 1:
+                if len(candidates_to_redirect) > 0:
+                    if config.get('navigation_save_ignore_found', 0) == 1:
+                        logging.info('found {0} candidates to redirect, but we will ignore them'.format(len(candidates_to_redirect)))
+                    else:
+                        do_nav_save = False
+
+                if do_nav_save:
+                    logging.info('navigation_save=1, ref {0}, url {1}'.format(page_id, new_url))
+
+                    payload = None
+                    try:
+                        payload = await api.savePage(url = redirect_url, link_pages = [page], conv = False)
+                    except Exception as e:
+                        raise web.HTTPBadRequest(str(e))
+
+                    u = URL(request.url).with_name(payload[0].identify)
+                    return web.HTTPFound(location = str(u))
 
             return aiohttp_jinja2.render_template('url.html', request, {
                 'url': redirect_url,
                 'id': page.identify,
-                'back_btn': '/page/' + page_id
+                'back_btn': '/page/' + page_id,
+                'possible_pages': candidates_to_redirect,
+                'possible_pages_count': len(candidates_to_redirect)
             })
 
         case 'all_assets':
@@ -206,7 +233,11 @@ async def gpbid(request: web.Request):
                 query['remove_meta'] = 'on'
                 query['remove_selectors'] = 'nav, header, input, button'
 
-            text = page.getRootFile().read_text(encoding = encoding)
+            try:
+                text = page.getRootFile().read_text(encoding = encoding)
+            except UnicodeDecodeError:
+                return web.HTTPFound(location = '/page/{0}?mode=page_options&error=encoding'.format(page.identify))
+
             html = PageHTML.from_html(text)
 
             if query.get('remove_scripts') == 'on':
@@ -450,7 +481,7 @@ async def sp(request: web.Request):
     try:
         payload = await api.savePage(url = url, link_pages = ps)
     except Exception as e:
-        raise web.HTTPBadRequest(body = str(e), status = 500)
+        raise web.HTTPBadRequest(body = str(e))
 
     return web.json_response(payload, headers = cors_headers)
 
