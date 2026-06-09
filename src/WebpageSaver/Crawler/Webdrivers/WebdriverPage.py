@@ -13,6 +13,7 @@ class WebdriverPage:
 
     _page = None
     _page_response = None
+    _first_request_ever = None
 
     def __init__(self):
         self.got_assets = []
@@ -128,3 +129,8 @@ class WebdriverPage:
 
     def getResponseURL(self) -> str:
         return self._page_response.url
+
+    def getFirstRequestEver(self):
+        for item in self.got_assets:
+            if item.is_first_ever == True:
+                return item

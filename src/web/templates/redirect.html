@@ -1,0 +1,12 @@
+{% extends '@layout.html' %}
+
+{% block body %}
+    <div class="p-5">
+        <b>{{page.status}}</b>
+
+        <div class="pt-5">
+            <p>This page redirects to:</p>
+            <a href="/page/{{redir.identify}}">{{redir.url}}</a>
+        </div>
+    </div>
+{% endblock %}

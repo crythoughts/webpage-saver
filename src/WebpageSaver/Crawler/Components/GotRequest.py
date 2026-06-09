@@ -10,6 +10,7 @@ class GotRequest(BaseModel):
     asset: Asset = Field(default = None)
     request: Any = Field(default = None, exclude = True)
     response: Any = Field(default = None, exclude = True)
+    is_first_ever: bool = Field(default = False)
 
     started_at: float = Field(default = None)
     ended_at: float = Field(default = None)

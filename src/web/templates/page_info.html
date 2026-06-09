@@ -46,6 +46,14 @@
         <span class="text-xl">{{page.url}}</span>
     </div>
 
+    {% if page.redirected_to != None %}
+        <div>
+            <a class="text-xl" href="/page/{{page.redirected_to}}?mode=meta">
+                Is a redirect.
+            </a>
+        </div>
+    {% endif %}
+
     {% if linked_count > 0 %}
     <div>
         <a class="text-xl" href="/page/{{page.identify}}?mode=linked">

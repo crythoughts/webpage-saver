@@ -233,6 +233,14 @@ async def gpbid(request: web.Request):
                 query['remove_meta'] = 'on'
                 query['remove_selectors'] = 'nav, header, input, button'
 
+            if page.redirected_to != None:
+                redir = page.getRedirection()
+                return aiohttp_jinja2.render_template('redirect.html', request, {
+                    'page': page,
+                    'back_btn': '/page/' + page_id + '?mode=meta',
+                    'redir': redir
+                })
+
             try:
                 text = page.getRootFile().read_text(encoding = encoding)
             except UnicodeDecodeError:

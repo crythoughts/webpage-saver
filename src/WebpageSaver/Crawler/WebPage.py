@@ -28,6 +28,7 @@ class WebPage(BaseModel):
 
     from_html: bool = Field(default = False)
     is_iframe: bool = Field(default = False)
+    has_screenshot: bool = Field(default = True)
 
     # URLs
 
@@ -91,7 +92,11 @@ class WebPage(BaseModel):
     @property
     def encoding(self) -> str:
         #print(self.encodings, self.common_encoding_id)
-        return self.encodings[self.common_encoding_id]
+        try:
+            return self.encodings[self.common_encoding_id]
+        except Exception as e:
+            logging.exception(e)
+            return 'utf-8'
 
     def setDate(self) -> str:
         '''
@@ -300,3 +305,10 @@ class WebPage(BaseModel):
             return self.title
 
         return d + '...'
+
+    def getRedirection(self):
+        from WebpageSaver.Cache import Page as DBPage
+
+        d = DBPage.select().where(DBPage.path_to == self.redirected_to).first()
+        if d:
+            return d.toModel()

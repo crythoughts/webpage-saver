@@ -7,7 +7,7 @@
 
 **viewer**
 
-- [ ] detect if link javascript: or normal
+- [x] detect if link javascript: or normal
 - [x] forms submit
 - [x] css url('') replacer
 
@@ -22,7 +22,7 @@
 - [x] load page from html and browser extension
 - [x] list of found encodings
 - [ ] screenshot canvases
-- [ ] 302 response
+- [x] 302 response
 - [ ] iframes
 - [ ] shadow dom support
 - [x] urls with `../`

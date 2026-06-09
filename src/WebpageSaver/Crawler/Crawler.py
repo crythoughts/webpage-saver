@@ -23,9 +23,11 @@ class Crawler:
         _orig_dir = page.getAssetsDir()
 
         async def _request(request):
+            is_first_ever = False
             if URL(page.url) == URL(request.url):
-                logging.info('not downloading page again')
-                return
+                #logging.info('not downloading page again')
+                is_first_ever = True
+                #return
 
             logging.info('{0} asset'.format(request.url))
 
@@ -33,7 +35,8 @@ class Crawler:
                 url = request.url,
                 started_at = datetime.now().timestamp(),
                 request = request,
-                done = False
+                done = False,
+                is_first_ever = is_first_ever
             ))
 
         async def _response(response):
@@ -45,13 +48,15 @@ class Crawler:
             if request == None:
                 return
 
+            request.response = response
+
             logging.info('request {0}, method {1}'.format(response.url, request.request.method))
 
-            if request.request.method == 'GET':
+            if request.is_first_ever == False and request.request.method == 'GET':
                 try:
                     _url = response.url
                     if request.request.redirected_from:
-                        logging.info('assets: redirected from {0}'.format(_url))
+                        logging.info('assets: redirected to {0}'.format(_url))
                         _url_r = request.request.redirected_from.url
                         for _item in webdriver_page.got_assets:
                             if _item.url_matches(_url_r):
@@ -70,13 +75,12 @@ class Crawler:
                     with open(str(_dir), 'wb+') as _file:
                         _file.write(buffer)
 
-                    request.ended_at = datetime.now().timestamp()
-
                     logging.info('assets: downloaded {0}'.format(_url))
                 except Exception as e:
                     logging.error('error downloading asset {0}'.format(_url))
                     logging.exception(e)
 
+            request.ended_at = datetime.now().timestamp()
             request.done = True
 
         webdriver_page._page.on('request', _request)
@@ -208,8 +212,7 @@ class Crawler:
                 p.saveData()
                 page.linkPage(p)
 
-        got_page = None
-        has_redir = False
+        redir_page = None
 
         browser_page = await webdriver.openPage(page)
         await self.register(page, browser_page)
@@ -217,32 +220,36 @@ class Crawler:
 
         # After "GOTO"
         # It will skip other stages of redirect (if they are more than 1), but anyway.
-        if str(browser_page.getStatus())[0] == '3':
-            logging.log('URL redirected')
+        #print(browser_page.getFirstRequestEver())
 
-            got_page = WebPage(
-                url = browser_page.getResponseURL(),
+        status = browser_page.getFirstRequestEver().response.status
+
+        if str(status)[0] == '3':
+            logging.info('URL redirected')
+
+            redir_page = WebPage(
+                url = str(page.url),
                 title = 'Redirect',
-                status = 200, # ig
-                identify = page.identify
+                status = status, # ig
+                redirected_to = page.identify,
+                has_screenshot = False
             )
-            got_page.init(config.webpages_dir)
-            #got_page.linkPage(page)
-            page.linkPage(got_page)
-            has_redir = True
-        else:
-            got_page = page
-            got_page.status = browser_page.getStatus()
+            redir_page.init(config.webpages_dir)
+            #page.linkPage(page)
+            page.url = browser_page.getResponseURL()
+            page.linkPage(redir_page)
+
+        page.status = browser_page.getStatus()
 
         await browser_page.integrate(page)
         await self.crawl(page, browser_page)
 
-        if has_redir == True:
-            self._savePageToCache(page)
+        self._savePageToCache(page)
 
-        self._savePageToCache(got_page)
+        if redir_page != None:
+            self._savePageToCache(redir_page)
 
-        return got_page
+        return page
 
     def _savePageToCache(self, page: WebPage):
         m = Page.fromModel(page, page.path_to)
