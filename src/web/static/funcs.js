@@ -98,6 +98,6 @@ function openPageInIframe(id) {
 }
 
 function openPhoto(element, event) {
-    element.parentNode.href = event.target.dataset.url
-    element.src = event.target.src
+    element.parentNode.href = event.currentTarget.querySelector('img').dataset.url
+    element.src = event.currentTarget.querySelector('img').src
 }

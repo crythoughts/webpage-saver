@@ -11,7 +11,9 @@ from WebpageSaver.Crawler.Components.JSFunctions import getNavRemoveScript, getL
 from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
 from typing import Generator
+from WebpageSaver import config
 import re
+import json
 import logging
 
 class PageHTML:
@@ -222,6 +224,16 @@ class PageHTML:
     def add_catch_events(self, page: WebPage):
         s = self.bs.new_tag('script')
         s.string = getLinksClickCatcherScript(page)
+
+        self.bs.find('head').insert(0, s)
+
+    def add_display_panel_script(self, page: WebPage):
+        s = self.bs.new_tag('script')
+        data = json.dumps(page.dump(), ensure_ascii = False)
+        scr = config.cwd.joinpath('web').joinpath('static').joinpath('page-panel.js')
+        scr_text = scr.read_text()
+        scr_text = scr_text[:30] + data + scr_text[32:]
+        s.string = scr_text
 
         self.bs.find('head').insert(0, s)
 

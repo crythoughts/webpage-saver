@@ -259,6 +259,9 @@ async def gpbid(request: web.Request):
             except:
                 pass
 
+            if query.get('display_panel', 'on') == 'on':
+                html.add_display_panel_script(page)
+
             if query.get('relay_sw') != 'on':
                 html.make_local_links_to_assets(page)
 

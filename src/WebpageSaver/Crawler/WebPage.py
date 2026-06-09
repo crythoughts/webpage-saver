@@ -292,3 +292,11 @@ class WebPage(BaseModel):
         Deletes page dir
         '''
         shutil.rmtree(str(self.getDir()))
+
+    def getShortTitle(self):
+        d = self.title[0:15]
+
+        if d == self.title:
+            return self.title
+
+        return d + '...'

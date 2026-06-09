@@ -46,13 +46,13 @@
         {% else %}
             <div class="h-100 max-h-100 flex items-center justify-center m-5">
                 <a href="">
-                    <img id="photo_media_page" class="object-contain h-full w-full" src="" alt="">
+                    <img id="photo_media_page" class="h-auto w-auto" src="" alt="">
                 </a>
             </div>
             <div id="photos_slider" class="flex overflow-x-auto overflow-y-hidden max-w-full gap-1 w-[calc(100vw-200px)]">
                 {% for i in media %}
                     <div onclick="openPhoto(photo_media_page, event)" class="cursor-pointer shrink-0 w-20 h-20 bg-gray-400 flex items-center justify-center">
-                        <img loading="lazy" class="object-contain" src="{{i.local_url}}" data-url="{{i.url}}" alt="{{i.alt}}">
+                        <img loading="lazy" class="object-contain" src="{{i.local_url}}" data-url="{{i.url}}" title="{{i.alt}}" alt="{{i.alt}}">
                     </div>
                 {% endfor %}
             </div>
