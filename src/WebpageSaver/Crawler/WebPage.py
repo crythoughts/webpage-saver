@@ -9,6 +9,7 @@ from WebpageSaver import config
 from yarl import URL
 from functools import cache
 import logging
+import brotli
 import json
 import shutil
 
@@ -132,6 +133,14 @@ class WebPage(BaseModel):
 
     def getThumbsDir(self) -> Path:
         return self.getDir().joinpath(self.thumbs_directory)
+
+    def getIndexPageText(self, encoding: str = 'utf-8'):
+        if encoding != 'br':
+            text = self.getRootFile().read_text(encoding = encoding)
+        else:
+            text = brotli.decompress(self.getRootFile().read_bytes()).decode('utf-8')
+
+        return text
 
     def _create_index(self):
         '''

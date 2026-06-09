@@ -14,7 +14,33 @@ document.getElementById('sendButton').addEventListener('click', async () => {
 
         const [{ result: html }] = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
-                func: () => document.documentElement.outerHTML
+                func: () => {
+                    try {
+                        return (()=>{
+                            const extractShadowContent = (element) => {
+                                let result = element.outerHTML;
+                                
+                                if (element.shadowRoot) {
+                                    const shadowHtml = Array.from(element.shadowRoot.children)
+                                        .map(child => extractShadowContent(child))
+                                        .join('');
+                                    result = result.replace('>', '><shadow-root>' + shadowHtml + '</shadow-root>');
+                                }
+                                
+                                Array.from(element.children).forEach(child => {
+                                    const childHtml = extractShadowContent(child);
+                                    result = result.replace(child.outerHTML, childHtml);
+                                });
+                                
+                                return result;
+                            };
+                            
+                            return extractShadowContent(document.documentElement);
+                        })()
+                    } catch(e) {
+                        return document.documentElement.outerHTML
+                    }
+                }
         });
         const fd = new FormData();
         fd.append('url', tab.url)

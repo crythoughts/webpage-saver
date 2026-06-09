@@ -242,8 +242,10 @@ async def gpbid(request: web.Request):
                 })
 
             try:
-                text = page.getRootFile().read_text(encoding = encoding)
-            except UnicodeDecodeError:
+                #text = page.getRootFile().read_text(encoding = encoding)
+                text = page.getIndexPageText(encoding)
+            except UnicodeDecodeError as e:
+                logging.exception(e)
                 return web.HTTPFound(location = '/page/{0}?mode=page_options&error=encoding'.format(page.identify))
 
             html = PageHTML.from_html(text)
@@ -581,8 +583,9 @@ def swjs(request: web.Request):
 async def main():
     host = config.get('server.host', '127.0.0.1')
     port = config.get('server.host', 7514)
+    client_max_size_megabytes = config.get('server.client_max_size_megabytes', 50)
 
-    app = web.Application()
+    app = web.Application(client_max_size = 1024 * 1024 * client_max_size_megabytes)
     aiohttp_jinja2.setup(app,
         loader=jinja2.FileSystemLoader(config.cwd.joinpath('web').joinpath('templates')))
 

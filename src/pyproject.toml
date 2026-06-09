@@ -5,4 +5,4 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "webpage-saver"
 version = "0.0.1"
-dependencies  = ["peewee", "asyncio", "aiofiles", "aiohttp", "aiohttp-jinja2", "playwright", "beautifulsoup4", "ua-generator"]
+dependencies  = ["peewee", "asyncio", "aiofiles", "aiohttp", "aiohttp-jinja2", "playwright", "beautifulsoup4", "ua-generator", "brotli"]

@@ -15,6 +15,7 @@ from WebpageSaver import config
 import re
 import json
 import logging
+import brotli
 
 class PageHTML:
     bs: BeautifulSoup = None
@@ -304,6 +305,9 @@ class PageHTML:
                     item['href'] = '/page/{0}?mode=url&url={1}'.format(page.identify, Asset.encodeURL(_href))
 
     def prettify(self, encoding: str = 'utf-8') -> str:
+        if encoding == 'br':
+            return str(self.bs).encode(encoding = 'utf-8')
+
         return str(self.bs).encode(encoding = encoding)
 
     def clear(self, page, clear_js: bool = False,

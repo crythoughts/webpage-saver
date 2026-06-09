@@ -18,6 +18,7 @@
                             {% for enc in page.encodings %}
                                 <option {% if enc == page.encoding %}checked{% endif %} value="{{enc}}">{{enc}}</option>
                             {% endfor %}
+                            <option value="br">brotli</option>
                         </select>
                     </div>
                 </div>

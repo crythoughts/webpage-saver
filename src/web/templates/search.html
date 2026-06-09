@@ -18,7 +18,7 @@
 <div class="flex flex-col gap-5 pl-10 pr-10 pt-5 pb-20">
     {% for i in items %}
     <div class="flex flex-row gap-5">
-        <img class="w-20" src="/page/screenshot?id={{i.identify}}&file=viewport.jpeg" loading="lazy">
+        <img class="max-h-40 w-20 object-contain" src="/page/screenshot?id={{i.identify}}&file=viewport.jpeg" loading="lazy">
 
         <div class="flex flex-col">
             <a title="{{i.url}}" href="/page/{{i.identify}}">{{i.title}}</a>

@@ -24,9 +24,11 @@ class WebdriverPage:
         self._page_response = _res
 
     async def integrate(self, page: WebPage):
-        page.title = await self.get_title()
         page.base_url = self.get_base_url()
         page.relative_url = await self.get_relative_url()
+
+    async def setTitle(self, page: WebPage):
+        page.title = await self.get_title()
 
     async def close(self):
         await self._page.close()
@@ -35,7 +37,32 @@ class WebdriverPage:
         return await self._page.title()
 
     async def get_html(self):
-        return await self._page.content()
+        html_with_shadow = await self._page.evaluate("""
+            () => {
+                const extractShadowContent = (element) => {
+                    let result = element.outerHTML;
+                    
+                    if (element.shadowRoot) {
+                        const shadowHtml = Array.from(element.shadowRoot.children)
+                            .map(child => extractShadowContent(child))
+                            .join('');
+                        result = result.replace('>', '><shadow-root>' + shadowHtml + '</shadow-root>');
+                    }
+                    
+                    Array.from(element.children).forEach(child => {
+                        const childHtml = extractShadowContent(child);
+                        result = result.replace(child.outerHTML, childHtml);
+                    });
+                    
+                    return result;
+                };
+                
+                return extractShadowContent(document.documentElement);
+            }
+        """)
+
+        return html_with_shadow
+        #return await self._page.content()
 
     async def get_parsed_html(self):
         return PageHTML.from_html(await self.get_html())

@@ -24,10 +24,11 @@
 - [ ] screenshot canvases
 - [x] 302 response
 - [ ] iframes
-- [ ] shadow dom support
+- [x] shadow dom support
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
+- [ ] brotli support
 
 **webdrivers**
 

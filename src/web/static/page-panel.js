@@ -24,7 +24,7 @@
             </style>
             <div id="p${class_name}">
                 <a href="/page/${data.identify}?mode=meta">About</a>
-                <a onclick="p${class_name}.remove();s${class_name}.remove()">Close</a>
+                <a href="javascript:void(0)" onclick="p${class_name}.remove();s${class_name}.remove()">Close</a>
             </div>
         `)
     })

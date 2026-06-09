@@ -14,6 +14,7 @@ import logging
 
 class Crawler:
     non_request_downloads: bool = False
+    default_page_timeout_s: int = 60
 
     async def register(self, page: WebPage, webdriver_page):
         self.i = Increment()
@@ -146,6 +147,7 @@ class Crawler:
 
         html = await webdriver_page.get_parsed_html()
         page.setEncoding(html.encoding)
+        await webdriver_page.setTitle(page)
 
         for meta in html.get_meta(page):
             page.meta.append(meta)
@@ -205,7 +207,12 @@ class Crawler:
     async def _after_crawl(self, page: WebPage):
         pass
 
-    async def sendPage(self, page: WebPage, webdriver, link_pages: list[WebPage]):
+    async def sendPage(self, page: WebPage, 
+                       webdriver, 
+                       link_pages: list[WebPage],
+                       remove_js: bool = False,
+                       html: str = None,
+                       from_html: bool = False):
         if link_pages:
             for p in link_pages:
                 p.linkPage(page)
@@ -215,7 +222,12 @@ class Crawler:
         redir_page = None
 
         browser_page = await webdriver.openPage(page)
+        browser_page._page.set_default_timeout(self.default_page_timeout_s * 1000)
         await self.register(page, browser_page)
+
+        if from_html:
+            await self.prepareTab(page, browser_page, url = page.url, html = html, remove_js = remove_js)
+
         await browser_page.goto(page.url)
 
         # After "GOTO"
