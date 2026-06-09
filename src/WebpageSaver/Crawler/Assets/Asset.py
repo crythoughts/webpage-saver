@@ -96,8 +96,23 @@ class Asset(BaseModel):
     def get_node(self):
         return self.bs_node
 
-    def getLocalURL(self, from_page, id: int):
+    def _get_url_by_id(self, from_page, id: int = None):
         return '/page/asset?id={0}&path={1}'.format(from_page.identify, id)
+
+    def getLocalURL(self, from_page, id: int = None, path: str = None):
+        #if id != None:
+        #    return self._get_url_by_id(from_page, id)
+
+        p = URL(path)
+
+        # TODO REMOVE
+        # If asset is not from site's host
+        if p.host and URL(from_page.url).host != p.host:
+            return self._get_url_by_id(from_page, id)
+        else:
+            u = URL('/page/asset/{0}{1}'.format(from_page.identify, p.path_qs))
+
+            return u.human_repr()
 
     def hasLocalURL(self):
         return self.local_url not in [None, '']

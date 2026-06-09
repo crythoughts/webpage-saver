@@ -137,10 +137,16 @@ class PageHTML:
             item = Script()
             item.set_node(tag)
 
-            if tag.get('src') != None:
-                item.set_url(orig_page.getRelativeURL(tag.get('src')))
-            else:
+            src = tag.get('src')
+
+            try:
+                if len(src) > 0:
+                    item.set_url(orig_page.getRelativeURL(tag.get('src')))
+            except:
                 pass
+
+            #else:
+            #    pass
                 #for key, attr in tag.attrs.items():
                     #if key in ['rel', 'href']:
                     #    continue
@@ -264,7 +270,8 @@ class PageHTML:
 
                 continue
 
-            item[_key] = _id[1].asset.getLocalURL(page, _id[0])
+            #item[_key] = _id[1].asset.getLocalURL(page, _id[0])
+            item[_key] = _id[1].asset.getLocalURL(page, id = _id[0], path = _url)
 
     def make_links_local(self, page: WebPage):
         for item in self.bs.select('meta[http-equiv]'):
@@ -286,6 +293,36 @@ class PageHTML:
 
     def prettify(self, encoding: str = 'utf-8') -> str:
         return str(self.bs).encode(encoding = encoding)
+
+    def clear(self, page, clear_js: bool = False,
+            remove_integrity: bool = False,
+            remove_inline_css: bool = False,
+            remove_styles: bool = False,
+            remove_iframes: bool = False,
+            remove_meta: bool = False,
+            remove_funcs: bool = False,
+            catch_clicks: bool = False,
+            relay_sw: bool = False,
+            original_links: bool = False
+              ):
+        if clear_js:
+            self.clear_js()
+
+        if remove_integrity:
+            self.remove_integrity()
+        if remove_inline_css:
+            self.remove_inline_css()
+            self.remove_html_stylization()
+        if remove_styles:
+            self.remove_css()
+        if remove_iframes:
+            self.remove_iframes()
+        if remove_meta:
+            self.remove_meta()
+        if remove_funcs:
+            self.add_nav_remove_script()
+        if catch_clicks:
+            self.add_catch_events(page)
 
     @classmethod
     def from_html(cls, html: str):

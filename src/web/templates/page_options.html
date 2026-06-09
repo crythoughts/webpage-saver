@@ -10,7 +10,7 @@
         <input type="hidden" name="mode", value="page">
 
         <div class="flex gap-5">
-            <div class="w-50">
+            <div class="w-100">
                 <div>
                     <b>Encoding</b>
                     <div>
@@ -50,12 +50,21 @@
                             Remove navigation functions
                         </label>
                         <label>
-                            <input type="checkbox" name="relay_sw">
-                            Relay on SW
-                        </label>
-                        <label>
                             <input checked type="checkbox" name="catch_clicks">
                             Catch navigation and submit events
+                        </label>
+                    </div>
+
+                    <b>Other display options</b>
+
+                    <div class="flex flex-col">
+                        <label>
+                            <input type="checkbox" name="relay_sw">
+                            Do not replace assets links to local
+                        </label>
+                        <label>
+                            <input type="checkbox" name="remove_integrity">
+                            Remove all "integrity" attrs
                         </label>
                     </div>
                 </div>

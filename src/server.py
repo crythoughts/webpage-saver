@@ -240,21 +240,18 @@ async def gpbid(request: web.Request):
 
             html = PageHTML.from_html(text)
 
-            if query.get('remove_scripts') == 'on':
-                html.clear_js()
-            if query.get('remove_inline_css') == 'on':
-                html.remove_inline_css()
-                html.remove_html_stylization()
-            if query.get('remove_styles') == 'on':
-                html.remove_css()
-            if query.get('remove_iframes') == 'on':
-                html.remove_iframes()
-            if query.get('remove_meta') == 'on':
-                html.remove_meta()
-            if query.get('remove_funcs', 'on') == 'on':
-                html.add_nav_remove_script()
-            if query.get('catch_clicks', 'on') == 'on':
-                html.add_catch_events(page)
+            html.clear(page,
+                clear_js = query.get('remove_scripts') == 'on',
+                remove_integrity = query.get('remove_integrity') == 'on',
+                remove_inline_css = query.get('remove_inline_css') == 'on',
+                remove_styles = query.get('remove_styles') == 'on',
+                remove_iframes = query.get('remove_iframes') == 'on',
+                remove_meta = query.get('remove_meta') == 'on',
+                remove_funcs = query.get('remove_funcs', 'on') == 'on',
+                catch_clicks = query.get('catch_clicks', 'on') == 'on',
+                relay_sw = query.get('relay_sw') != 'on',
+                original_links = query.get('original_links') != 'on'
+            )
 
             try:
                 if query.get('remove_selectors') != None:
@@ -277,11 +274,22 @@ async def gpbid(request: web.Request):
             )
 
 @routes.get('/page/asset')
+@routes.get('/page/asset/{identify}/{path:.*}')
 async def gpa(request: web.Request):
     query = request.rel_url.query
 
+    #asset_url = query.get('asset_url', None)
+    asset_url = request.match_info.get('path', None)
     page_id = query.get('id')
-    asset_url = query.get('asset_url', None)
+
+    if asset_url != None:
+        query_string = URL(request.url).query_string or ''
+
+        if len(query_string) > 0:
+            asset_url = asset_url + '?' + query_string
+
+        page_id = int(request.match_info.get('identify'))
+
     path_id = query.get('path', '')
 
     pages = api.getPagesById(ids = [page_id], convert = False)

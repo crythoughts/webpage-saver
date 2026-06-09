@@ -13,6 +13,8 @@ import asyncio
 import logging
 
 class Crawler:
+    non_request_downloads: bool = False
+
     async def register(self, page: WebPage, webdriver_page):
         self.i = Increment()
 
@@ -164,17 +166,22 @@ class Crawler:
                     if item.url and asset.url_matches(item.url):
                         found_asset = asset
 
-                if found_asset == None and item.has_url():
+                if self.non_request_downloads and found_asset == None and item.has_url():
                     if download_assets == False:
                         continue
 
                     try:
                         await item.download_function(page.getAssetsDir(), str(self.i.getIndex()))
+                        logging.info(key + ': non-request download: ' + item.get_url())
+                        #print(item, found_asset)
                     except Exception as e:
                         logging.exception(e)
 
-                item.moveUrlToAnotherAttr(page)
-                results[key].append(item)
+                try:
+                    item.moveUrlToAnotherAttr(page)
+                    results[key].append(item)
+                except Exception as e:
+                    logging.exception(e)
 
         for link in results.get('get_favicons'):
             page.favicons.append(link)

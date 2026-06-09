@@ -24,7 +24,7 @@ self.addEventListener('fetch', async event => {
     }*/
 
     // its view page
-    maybe = '/page/' + String((new Date()).getFullYear()).substring(0, 1);
+    const maybe = '/page/' + String((new Date()).getFullYear()).substring(0, 1);
     if (ref.pathname.startsWith(maybe) || ref.pathname.startsWith('/page/asset')) {
         if (ref.searchParams.get('mode') == 'page' || ref.searchParams.get('mode') == null) {
             if (!['no-cors', 'cors', 'same-origin'].includes(request.mode)) {
@@ -37,10 +37,10 @@ self.addEventListener('fetch', async event => {
         should_proxy_be_applied = false;
     }
 
-    if (u.pathname == '/page/asset') {
-        if (u.searchParams.get('id') != null) {
+    if (u.pathname.startsWith('/page/asset')) {
+        //if (u.searchParams.get('id') != null) {
             should_asset_be_proxied = false;
-        }
+        //}
     }
 
     if (request.mode === 'navigate') {
@@ -48,8 +48,10 @@ self.addEventListener('fetch', async event => {
     }
 
     const should_proxy = should_proxy_be_applied && should_asset_be_proxied;
+    const page_ids = ref.pathname.split('/');
+    const page_id = page_ids[page_ids.length - 1];
 
-    //console.log( request, ref.pathname, ref.pathname.startsWith('/page/asset'), ref.searchParams.get('mode'), u.pathname, should_proxy, should_proxy_be_applied, should_asset_be_proxied)
+    // console.log( request, ref.pathname, u, u.pathname.startsWith('/page/asset'), ref.searchParams.get('mode'), u.pathname, should_proxy, should_proxy_be_applied, should_asset_be_proxied)
 
     if (!should_proxy) {
         event.respondWith(
@@ -73,12 +75,16 @@ self.addEventListener('fetch', async event => {
             const v1 = v.split('/');
             const v2 = v1[v1.length - 1]
 
-            nu = new URL(v0.origin + '/page/asset')
-            nu.searchParams.set('id', v2);
+            let nu = new URL(v0.origin + '/page/asset')
 
+            //console.log(u.origin, ref.origin)
             if (u.origin == ref.origin) {
-                nu.searchParams.set('asset_url', u.pathname);
+                //console.log(page_id, u.pathname)
+                nu = new URL(v0.origin + '/page/asset/' + page_id)
+                nu.pathname += u.pathname + (u.search ?? '')
+                //nu.searchParams.set('asset_url', u.pathname);
             } else {
+                nu.searchParams.set('id', v2);
                 nu.searchParams.set('asset_url', u.href);
             }
             nu.searchParams.set('content_type', content_type);
