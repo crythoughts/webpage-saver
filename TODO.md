@@ -21,7 +21,7 @@
 - [x] save assets
 - [x] load page from html and browser extension
 - [x] list of found encodings
-- [ ] screenshot canvases
+- [x] canvases
 - [x] 302 response
 - [x] iframes
 - [ ] styles in iframes

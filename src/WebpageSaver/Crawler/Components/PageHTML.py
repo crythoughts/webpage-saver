@@ -91,7 +91,7 @@ class PageHTML:
 
     def get_downloadable_links(self, orig_page: WebPage):
         for item in self.get_links(orig_page):
-            print(item.url, item.should_download())
+            #print(item.url, item.should_download())
             if item.should_download() == False:
                 continue
 
@@ -273,7 +273,7 @@ class PageHTML:
         #        item['href'] = '{0}{1}'.format(page.relative_url, _href)
 
         # replacing assets
-        for item in self.bs.select('[' + page.getOrigAttr() + ']'):
+        for item in self.bs.select('[' + page.getOrigAttr() + ']:not(canvas)'):
             #_url = base64.urlsafe_b64encode(('assets/' + _file_url).encode()).decode()
             _url = item[page.getOrigAttr()]
             _key = item[page.getKeyAttr()]
@@ -329,6 +329,21 @@ class PageHTML:
 
                 if need:
                     frame['src'] = '/page/' + need.identify + '?display_panel=off'
+            except Exception as e:
+                logging.exception(e)
+
+    def make_canvases_local(self, page: WebPage):
+        for item in self.bs.select('canvas[{0}]'.format(page.getOrigAttr())):
+            try:
+                item.name = 'div'
+                attr = item.get(page.getOrigAttr())
+                u = page.canvases[attr]
+
+                item.clear()
+                new_html = BeautifulSoup("<img style=\"width:{1}px;height:{2}px;\" src=\"{0}\">".format('/page/screenshot?id=' + page.identify + '&file=' + u.id + '.jpeg', u.width, u.height))
+                item.append(new_html)
+
+                item['src'] = ''
             except Exception as e:
                 logging.exception(e)
 

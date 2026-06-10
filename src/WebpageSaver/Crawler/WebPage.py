@@ -5,6 +5,7 @@ from pathlib import Path
 from WebpageSaver.Crawler.Assets.Meta import Meta
 from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
+from WebpageSaver.Crawler.Components.Canvas import Canvas
 from WebpageSaver import config
 from yarl import URL
 from functools import cache
@@ -59,6 +60,7 @@ class WebPage(BaseModel):
     # Assets
 
     assets_links: dict[int, GotRequest] = Field(default = {})
+    canvases: dict[str, Canvas] = Field(default = {})
 
     # Hyperlinks
 

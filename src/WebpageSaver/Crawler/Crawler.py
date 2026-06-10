@@ -188,6 +188,8 @@ class Crawler:
         if self.make_screenshots:
             await Screenshot().make_fullscreen(page, webdriver_page)
 
+        page.canvases = await Screenshot().make_canvases(page, webdriver_page)
+
         html = await webdriver_page.get_parsed_html()
         page.setEncoding(html.encoding)
         await webdriver_page.setTitle(page)

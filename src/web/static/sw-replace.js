@@ -25,7 +25,7 @@ self.addEventListener('fetch', async event => {
 
     // its view page
     const maybe = '/page/' + String((new Date()).getFullYear()).substring(0, 1);
-    if (ref.pathname.startsWith(maybe) || ref.pathname.startsWith('/page/asset')) {
+    if (ref.pathname.startsWith(maybe) || ref.pathname.startsWith('/page/asset') || ref.pathname.startsWith('/page/screenshot')) {
         if (ref.searchParams.get('mode') == 'page' || ref.searchParams.get('mode') == null) {
             if (!['no-cors', 'cors', 'same-origin'].includes(request.mode)) {
                 should_proxy_be_applied = false;

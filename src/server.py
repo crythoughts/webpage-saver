@@ -278,6 +278,7 @@ async def gpbid(request: web.Request):
             if query.get('original_links') != 'on':
                 html.make_links_local(page)
                 html.make_iframes_local(page)
+                html.make_canvases_local(page)
 
             #head_html = html.move_head()
 
