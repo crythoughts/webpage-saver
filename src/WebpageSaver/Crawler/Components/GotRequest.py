@@ -7,6 +7,8 @@ import logging
 class GotRequest(BaseModel):
     url: str = Field(default = None)
     content_type: str = Field(default = None)
+    status: int = Field(default = 200)
+
     asset: Asset = Field(default = None)
     request: Any = Field(default = None, exclude = True)
     response: Any = Field(default = None, exclude = True)
@@ -17,6 +19,9 @@ class GotRequest(BaseModel):
     interrupted_at: float = Field(default = None)
 
     done: bool = Field(default = False)
+    common_to_iframe: bool = Field(default = False)
+
+    _frame: Any = None
 
     def getContentType(self) -> str:
         if self.content_type:

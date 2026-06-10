@@ -11,69 +11,107 @@ from yarl import URL
 from WebpageSaver import config
 import asyncio
 import logging
+import aiofiles
 
 class Crawler:
     non_request_downloads: bool = False
-    default_page_timeout_s: int = 60
+    optional_sleep_s: float = 0
+    page_load_timeout_s: int = 5
+    sleep_before_crawl_s: float = 0
+    make_screenshots: bool = True
 
     async def register(self, page: WebPage, webdriver_page):
         self.i = Increment()
 
         logging.info('registering page...')
 
-        _orig_dir = page.getAssetsDir()
-
         async def _request(request):
-            is_first_ever = False
-            if URL(page.url) == URL(request.url):
-                #logging.info('not downloading page again')
-                is_first_ever = True
-                #return
+            try:
+                is_first_ever = False
+                #print(request.url)
 
-            logging.info('{0} asset'.format(request.url))
+                if URL(page.url) == URL(request.url):
+                    #logging.info('not downloading page again')
+                    is_first_ever = True
+                    #return
 
-            webdriver_page.got_assets.append(GotRequest(
-                url = request.url,
-                started_at = datetime.now().timestamp(),
-                request = request,
-                done = False,
-                is_first_ever = is_first_ever
-            ))
+                logging.info('{0} asset'.format(request.url))
+
+                webdriver_page.appendRequest(GotRequest(
+                    url = request.url,
+                    started_at = datetime.now().timestamp(),
+                    request = request,
+                    done = False,
+                    is_first_ever = is_first_ever
+                ), frame = request.frame,
+                page_link = page)
+            except Exception as e:
+                logging.exception(e)
 
         async def _response(response):
-            request = None
+            __request = None
             for item in webdriver_page.got_assets:
-                if item.url_matches(response.url):
-                    request = item
+                if item[1].url_matches(response.url):
+                    __request = item[1]
 
-            if request == None:
+            if __request == None:
                 return
 
-            request.response = response
+            __request.response = response
 
-            logging.info('request {0}, method {1}'.format(response.url, request.request.method))
+            logging.info('request {0}, method {1}'.format(response.url, __request.request.method))
 
-            if request.is_first_ever == False and request.request.method == 'GET':
+            if __request.common_to_iframe:
+                logging.info('request is common to its iframe')
+
+                # Writing as index.html!
+                __request._frame._create_index()
+                text = await response.body()
+                __request._frame.write(text)
+                #async with aiofiles.open(page.getRootFile(), mode='wb') as f:
+                #    async for chunk in response.content.iter_chunked(4096):
+                #        await f.write(chunk)
+
+                __request.done = True
+
+            if __request.done == False and __request.is_first_ever == False and __request.request.method == 'GET':
                 try:
                     _url = response.url
-                    if request.request.redirected_from:
+                    if __request.request.redirected_from:
                         logging.info('assets: redirected to {0}'.format(_url))
-                        _url_r = request.request.redirected_from.url
+                        _url_r = __request.request.redirected_from.url
                         for _item in webdriver_page.got_assets:
-                            if _item.url_matches(_url_r):
-                                request = _item
+                            if _item[1].url_matches(_url_r):
+                                __request = _item[1]
 
-                    request.asset = Asset(url=_url)
+                    __request.asset = Asset(url=_url)
+                    __request.status = response.status
                     _i = self.i.getIndex()
                     #_dir = _orig_dir.joinpath(request.asset.getEncodedURL())
-                    page.addAsset(_i, request)
+
+                    if __request._frame:
+                        __request._frame.addAsset(_i, __request)
+                        page.addAsset(_i, __request)
+                    else:
+                        page.addAsset(_i, __request)
                     #page.assets_links[request.asset.getEncodedURL()] = _i
 
                     headers = response.headers
-                    request.content_type = headers.get('content-type')
-                    _dir = _orig_dir.joinpath(str(_i))
+                    __request.content_type = headers.get('content-type')
+                    _orig_dir = page.getAssetsDir()
+
+                    if __request._frame != None:
+                        _w = webdriver_page.getFramePageByURL(__request._frame.url)
+
+                        if _w != None:
+                            _orig_dir = _w.getAssetsDir()
+                        else:
+                            logging.error('something wrong with iframe')
+
+                    dir_to_download = _orig_dir.joinpath(str(_i))
+
                     buffer = await response.body()
-                    with open(str(_dir), 'wb+') as _file:
+                    with open(str(dir_to_download), 'wb+') as _file:
                         _file.write(buffer)
 
                     logging.info('assets: downloaded {0}'.format(_url))
@@ -81,8 +119,8 @@ class Crawler:
                     logging.error('error downloading asset {0}'.format(_url))
                     logging.exception(e)
 
-            request.ended_at = datetime.now().timestamp()
-            request.done = True
+            __request.ended_at = datetime.now().timestamp()
+            __request.done = True
 
         webdriver_page._page.on('request', _request)
         webdriver_page._page.on('response', _response)
@@ -117,32 +155,37 @@ class Crawler:
                     scroll_down: bool = True,
                     scroll_down_max_cycles: int = 5,
                     download_assets: bool = True,
-                    remove_scripts: bool = False,
-                    make_screenshots: bool = True,
-                    sleep_before_crawl: float = 0,
-                    sleep_before_getting_html: float = 0,
-                    sleep_network_timeout: float = 0):
+                    remove_scripts: bool = False):
 
         u = URL(page.url)
         await webdriver_page.integrate(page)
-        await asyncio.sleep(sleep_before_crawl)
+
+        if self.sleep_before_crawl_s > 0:
+            await asyncio.sleep(self.sleep_before_crawl_s)
 
         async for e in webdriver_page.get_encoding():
             page.addEncoding(e)
 
         await webdriver_page.scroll_up()
 
-        if make_screenshots:
+        try:
+            await webdriver_page._page.wait_for_event('domcontentloaded', timeout = self.page_load_timeout_s * 1000)
+        except Exception as e:
+            logging.exception(e)
+
+        if self.make_screenshots:
             await Screenshot().make_viewport(page, webdriver_page)
 
         if scroll_down:
             if u.fragment not in ['', None]:
                 await webdriver_page.scroll_down(scroll_down_max_cycles)
 
-        await asyncio.sleep(sleep_before_getting_html)
-        await webdriver_page._page.wait_for_timeout(sleep_network_timeout)
+        if self.optional_sleep_s > 0:
+            await asyncio.sleep(self.optional_sleep_s)
 
-        if make_screenshots:
+        #await webdriver_page._page.wait_for_timeout(sleep_network_timeout)
+
+        if self.make_screenshots:
             await Screenshot().make_fullscreen(page, webdriver_page)
 
         html = await webdriver_page.get_parsed_html()
@@ -169,8 +212,8 @@ class Crawler:
                             continue
 
                 for asset in webdriver_page.got_assets:
-                    if item.url and asset.url_matches(item.url):
-                        found_asset = asset
+                    if item.url and asset[1].url_matches(item.url):
+                        found_asset = asset[1]
 
                 if self.non_request_downloads and found_asset == None and item.has_url():
                     if download_assets == False:
@@ -222,7 +265,7 @@ class Crawler:
         redir_page = None
 
         browser_page = await webdriver.openPage(page)
-        browser_page._page.set_default_timeout(self.default_page_timeout_s * 1000)
+        #browser_page._page.set_default_timeout()
         await self.register(page, browser_page)
 
         if from_html:
@@ -260,6 +303,9 @@ class Crawler:
 
         if redir_page != None:
             self._savePageToCache(redir_page)
+
+        for p in browser_page.getAdditionalPages():
+            self._savePageToCache(p)
 
         return page
 

@@ -277,6 +277,7 @@ async def gpbid(request: web.Request):
 
             if query.get('original_links') != 'on':
                 html.make_links_local(page)
+                html.make_iframes_local(page)
 
             #head_html = html.move_head()
 
@@ -502,6 +503,7 @@ async def sp(request: web.Request):
     try:
         payload = await api.savePage(url = url, link_pages = ps)
     except Exception as e:
+        logging.exception(e)
         raise web.HTTPBadRequest(body = str(e))
 
     return web.json_response(payload, headers = cors_headers)

@@ -8,13 +8,15 @@ class Link(Asset):
     as_item: str = Field(default = None, alias = 'as')
 
     def should_download(self):
-        if self.type == None and self.as_item == None and self.rel == None:
+        if self.type == None and self.rel == None: #and self.as_item == None and self.rel == None:
             return False
 
+        #print( self.rel)
         is_internal = True
         for key in ['icon', 'stylesheet']:
             if key in self.rel:
-                is_internal = False
+                return True
+                break
 
         if is_internal == True:
             return False

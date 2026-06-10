@@ -12,6 +12,7 @@ from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
 from typing import Generator
 from WebpageSaver import config
+from yarl import URL as UURL
 import re
 import json
 import logging
@@ -34,7 +35,7 @@ class PageHTML:
 
     def get_media(self, orig_page: WebPage, selector: str = None, original_urls: bool = True, set_local_urls: bool = False) -> Generator:
         if selector == None:
-            selector = "[src]"
+            selector = "[src]:not(iframe)"
 
         for tag in self.bs.select(selector):
             item = Media()
@@ -74,11 +75,14 @@ class PageHTML:
             item = Link()
             item.set_node(tag)
 
+            url = tag.get('href')
+            if len(tag.get('href')) == 0:
+                url = tag.get(orig_page.getOrigAttr())
+            item.set_url(orig_page.getRelativeURL(url))
+
             for key, attr in tag.attrs.items():
                 try:
-                    if key == 'href':
-                        item.set_url(orig_page.getRelativeURL(attr))
-                    else:
+                    if key != 'href':
                         setattr(item, key, attr)
                 except Exception as e:
                     logging.exception(e)
@@ -87,6 +91,7 @@ class PageHTML:
 
     def get_downloadable_links(self, orig_page: WebPage):
         for item in self.get_links(orig_page):
+            print(item.url, item.should_download())
             if item.should_download() == False:
                 continue
 
@@ -259,13 +264,13 @@ class PageHTML:
             del tag['integrity']
 
     def make_local_links_to_assets(self, page: WebPage, remove_temporary_attrs: bool = True):
-        for item in self.bs.select('link[href]'):
-            if item.get(page.getOrigAttr()) != None:
-                continue
+        #for item in self.bs.select('link[href]'):
+        #    if item.get(page.getOrigAttr()) != None:
+        #        continue
 
-            _href = item.get('href')
-            if _href:
-                item['href'] = '{0}{1}'.format(page.relative_url, _href)
+        #    _href = item.get('href')
+        #    if _href:
+        #        item['href'] = '{0}{1}'.format(page.relative_url, _href)
 
         # replacing assets
         for item in self.bs.select('[' + page.getOrigAttr() + ']'):
@@ -273,15 +278,18 @@ class PageHTML:
             _url = item[page.getOrigAttr()]
             _key = item[page.getKeyAttr()]
             _id = page.getAssetByUrl(_url)
+
             # removing internal data attributes
+            if _id == None:
+                item['data-__err'] = 'missing'
+                #item[_key] = '#'
+                #logging.error('page {0}: element \"{1}\" is missing'.format(page.identify, _url))
+
+                continue
+
             if remove_temporary_attrs:
                 item.attrs = {key:value for key,value in item.attrs.items()
                         if key not in [page.getOrigAttr(), page.getKeyAttr()]}
-
-            if _id == None:
-                logging.error('page {0}: element \"{1}\" is missing'.format(page.identify, _url))
-
-                continue
 
             #item[_key] = _id[1].asset.getLocalURL(page, _id[0])
             item[_key] = _id[1].asset.getLocalURL(page, id = _id[0], path = _url)
@@ -303,6 +311,26 @@ class PageHTML:
                     item['href'] = '/page/' + potential_page.identify
                 else:
                     item['href'] = '/page/{0}?mode=url&url={1}'.format(page.identify, Asset.encodeURL(_href))
+
+    def make_iframes_local(self, page: WebPage):
+        pages = list(page.getIframes())
+
+        for frame in self.bs.select('iframe'):
+            _href = frame.get('src')
+            need = None
+
+            try:
+                u = UURL(page.getRelativeURL(_href))
+                
+                for page in pages:
+                    if UURL(page.url) == u:
+                        need = page
+                        break
+
+                if need:
+                    frame['src'] = '/page/' + need.identify + '?display_panel=off'
+            except Exception as e:
+                logging.exception(e)
 
     def prettify(self, encoding: str = 'utf-8') -> str:
         if encoding == 'br':

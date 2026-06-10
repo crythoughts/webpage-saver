@@ -27,8 +27,7 @@ class WebPage(BaseModel):
 
     # App properties
 
-    from_html: bool = Field(default = False)
-    is_iframe: bool = Field(default = False)
+    from_html: bool = Field(default = False) # or better "created_from_html"
     has_screenshot: bool = Field(default = True)
 
     # URLs
@@ -46,7 +45,26 @@ class WebPage(BaseModel):
     #hyperlinks: list[URL] = Field(default = [])
     #media: list[Media] = Field(default = [])
 
-    # Other
+    # iFrames
+
+    is_iframe: bool = Field(default = False)
+    common_page_id: str = Field(default = None)
+    linked_iframe_pages: list[str] = Field(default = [])
+
+    # Encoding
+
+    encodings: list[str] = Field(default = ['utf-8'])
+    common_encoding_id: int = Field(default = 0)
+
+    # Assets
+
+    assets_links: dict[int, GotRequest] = Field(default = {})
+
+    # Hyperlinks
+
+    linked_pages: list[str] = Field(default = [])
+
+    # Internal
 
     identify: str = Field(default = None)
     root_directory: str = Field(default = None, exclude = True)
@@ -56,13 +74,8 @@ class WebPage(BaseModel):
     assets_directory: str = Field(default = 'assets')
     thumbs_directory: str = Field(default = 'thumbs')
 
-    encodings: list[str] = Field(default = [])
-    common_encoding_id: int = Field(default = 0)
-
-    assets_links: dict[int, GotRequest] = Field(default = {})
-    linked_pages: list[str] = Field(default = [])
-
     _cached_links = None
+    _cached_iframes = None
 
     def init(self, path: Path):
         self.root_directory = path
@@ -177,6 +190,14 @@ class WebPage(BaseModel):
             c.setData(d)
             c.save()
 
+    def setURL(self, url: str):
+        u = URL(url).origin().human_repr()
+        if u[-1] != '/':
+            u += '/'
+
+        self.relative_url = u
+        self.base_url = u
+
     def getReadableTaken(self):
         if self.taken == None:
             return None
@@ -227,7 +248,7 @@ class WebPage(BaseModel):
             return URL(self.url).joinpath(url).human_repr()
 
         if relative_url[-1] == '/':
-            relative_url[-1] = ''
+            relative_url = relative_url[:-1]
 
         if u1.host == None:
             if url == None or len(url) == 0:
@@ -239,7 +260,7 @@ class WebPage(BaseModel):
                 return relative_url + '/' + url
 
         # Not belongs to domain of this page
-        if URL(relative_url).host != URL(url).host and ignore_host_errors == False:
+        if URL(relative_url).host != u1.host and ignore_host_errors == False:
             return url
 
         if len(url) > 0:
@@ -294,6 +315,15 @@ class WebPage(BaseModel):
             self._cached_links = DBPage.select().where(DBPage.path_to.in_(self.linked_pages)).order_by(DBPage.taken_at.desc())
 
         for itm in self._cached_links:
+            yield itm.toModel()
+
+    def getIframes(self) -> Generator:
+        from WebpageSaver.Cache import Page as DBPage
+
+        if self._cached_iframes == None:
+            self._cached_iframes = DBPage.select().where(DBPage.path_to.in_(self.linked_iframe_pages))
+
+        for itm in self._cached_iframes:
             yield itm.toModel()
 
     def _selfCachedVersion(self):

@@ -23,12 +23,14 @@
 - [x] list of found encodings
 - [ ] screenshot canvases
 - [x] 302 response
-- [ ] iframes
+- [x] iframes
+- [ ] styles in iframes
 - [x] shadow dom support
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
 - [ ] brotli support
+- [ ] timeout
 
 **webdrivers**
 

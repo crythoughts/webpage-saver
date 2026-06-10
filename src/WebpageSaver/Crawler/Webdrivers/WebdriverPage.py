@@ -2,23 +2,31 @@ from pydantic import BaseModel, Field
 from WebpageSaver.Crawler.WebPage import WebPage
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 from WebpageSaver.Crawler.Components.PageHTML import PageHTML
+from typing import Any
+from WebpageSaver import config
 import asyncio
 import logging
 from urllib.parse import urlparse
 from typing import AsyncGenerator
+from playwright.async_api import Page as PlaywrightPage
+from yarl import URL
 
 class WebdriverPage:
     url_override: str = None
     got_assets: list[GotRequest]
+    iframes: list
+    iframe_pages: list[WebPage]
 
-    _page = None
+    _page: PlaywrightPage = None
     _page_response = None
     _first_request_ever = None
 
     def __init__(self):
         self.got_assets = []
+        self.iframes = []
+        self.iframe_pages = []
 
-    async def goto(self, url: str, wait_until: str = 'domcontentloaded'):
+    async def goto(self, url: str, wait_until: str = 'commit'):
         _res = await self._page.goto(url, wait_until = wait_until)
 
         self._page_response = _res
@@ -124,7 +132,7 @@ class WebdriverPage:
     async def scroll_up(self):
         return await self._page.evaluate('() => window.scrollTo(0, 0);')
 
-    async def scroll_down(self, scroll_cycles: int = 10, scroll_timeout: float = 0):
+    async def scroll_down(self, scroll_cycles: int = 10, scroll_timeout: float = 0.1):
         last_height = await self._page.evaluate('() => {return document.body.scrollHeight}')
         scroll_iter = 0
 
@@ -159,5 +167,80 @@ class WebdriverPage:
 
     def getFirstRequestEver(self):
         for item in self.got_assets:
-            if item.is_first_ever == True:
-                return item
+            if item[1].is_first_ever == True:
+                return item[1]
+
+    def appendRequest(self, request: GotRequest, frame = None, page_link = None):
+        f = None
+        try:
+            f = self.addFrame(frame, request, page_link)
+        except Exception as e:
+            logging.exception(e)
+
+        if f != None:
+            if URL(f.url) == URL(request.url):
+                request.common_to_iframe = True
+
+            request._frame = f
+
+        self.got_assets.append((f, request))
+
+    # Frames
+
+    def addFrame(self, iframe, request, page_link):
+        iframe_url = iframe.url
+        # For some reason, the iframe html request may be located in empty frame
+        if iframe_url == '':
+            iframe_url = request.url
+
+        if iframe == None:
+            #print('wrong iframe', iframe_url, page_link.url)
+            return None
+
+        if URL(iframe_url) == URL(page_link.url):
+            #print('iframe is the same page', iframe_url, page_link.url)
+            return None
+
+        if iframe_url in [None, 'about:blank']:
+            #print('about:blank iframe', iframe_url, page_link.url)
+            return None
+            
+        #found_iframe = None
+        for f in self.iframe_pages:
+            if URL(f.url) == URL(iframe_url):
+                return f
+                #break
+
+        #if found_iframe != None:
+        #    logging.info('iframe already added')
+        #    return found_iframe
+
+        self.iframes.append(iframe)
+
+        wp = WebPage(
+            is_iframe = True,
+            url = iframe_url,
+            common_page_id = page_link.identify,
+            title = iframe.name,
+            has_screenshot = False
+        )
+        wp.init(config.webpages_dir)
+        wp.setURL(iframe_url)
+        page_link.linked_iframe_pages.append(wp.identify)
+
+        self.iframe_pages.append(wp)
+
+        return wp
+
+    def getFramePageByURL(self, url: str):
+        for f in self.iframe_pages:
+            if f.url == url:
+                return f
+
+    def getFramePages(self):
+        for f in self.iframe_pages:
+            yield f
+
+    def getAdditionalPages(self): #getAdditionalPagesToSave
+        for f in self.iframe_pages:
+            yield f
