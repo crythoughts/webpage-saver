@@ -1,36 +1,47 @@
 {% extends '@layout.html' %}
 
 {% block body %}
+    {{search_type}}
 
-{% if search_type == 'accurate_url' %}
-<div>
-    <form action="/page/search">
-        <input type="text" name="q" id="url" value="{{q}}">
+    <div class="pl-10 pr-10 pt-5 pb-20 grid grid-cols-[1fr_0fr]">
+        <div>
+            {% if search_type == 'empty_search' or search_type == 'keywords_search' %}
+                <div>
+                    {% if search_type == 'empty_search' %}
+                        <b>All available pages ({{count}})</b>
+                    {% else %}
+                        <b>Search in title</b>
+                        <p>"{{q}}"</p>
+                    {% endif %}
+                </div>
+                <div class="flex flex-col pr-10 pt-5 pb-20">
+                    {% if count == 0 %}
+                        {% if search_type == 'empty_search' %}
+                            <div>No pages were archived.</div>
+                        {% else %}
+                            <div>Nothing found!</div>
+                        {% endif %}
+                    {% endif %}
 
-        <input type="submit" value="search">
-    </form>
-
-    <input type="button" onclick="save_submit(document.querySelector('#url').value)" value="save">
-
-</div>
-{% endif %}
-
-<div class="flex flex-col gap-5 pl-10 pr-10 pt-5 pb-20">
-    {% for i in items %}
-    <div class="flex flex-row gap-5">
-        <img class="max-h-40 w-20 object-contain" src="/page/screenshot?id={{i.identify}}&file=viewport.jpeg" loading="lazy">
-
-        <div class="flex flex-col">
-            <a title="{{i.url}}" href="/page/{{i.identify}}">{{i.title}}</a>
-
-            <div>
-                <span class="text-zinc-400">{{i.getReadableTaken()}}</span>
-                <span class="text-zinc-300">|</span>
-                <a href="/page/{{i.identify}}?mode=meta" class="text-zinc-400">About this page</a>
+                    {% for i in items %}
+                    <div onmouseover="hover_search(event)" data-url="{{i.url}}" data-screenshot="/page/screenshot?id={{i.identify}}&file=viewport.jpeg">
+                        {% if i.getFavicon() %}
+                            <img loading="lazy" src="{{i.getFavicon()}}" class="inline-block w-4 object-contain">
+                        {% else %}
+                            <div class="inline-block w-4 h-4"></div>
+                        {% endif %}
+                        <a href="/page/{{i.identify}}?mode=meta">{{i.getShortTitle(70)}}</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="w-40">
+            <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
+                <img class="min-h-20" id="hover_img">
+                <span id="hover_url" class="text-sm"></span>
             </div>
         </div>
     </div>
-    {% endfor %}
-</div>
 
 {% endblock %}

@@ -340,7 +340,7 @@ class PageHTML:
                 u = page.canvases[attr]
 
                 item.clear()
-                new_html = BeautifulSoup("<img style=\"width:{1}px;height:{2}px;\" src=\"{0}\">".format('/page/screenshot?id=' + page.identify + '&file=' + u.id + '.jpeg', u.width, u.height))
+                new_html = BeautifulSoup(u.toHTML(page))
                 item.append(new_html)
 
                 item['src'] = ''

@@ -339,13 +339,23 @@ class WebPage(BaseModel):
         '''
         shutil.rmtree(str(self.getDir()))
 
-    def getShortTitle(self):
-        d = self.title[0:15]
+    def getShortTitle(self, count: int = 15):
+        title = self.title
+        if self.title == None or len(self.title) == 0:
+            title = self.url
 
-        if d == self.title:
-            return self.title
+        d = title[0:count]
+
+        if d == title:
+            return title
 
         return d + '...'
+
+    def getFavicon(self):
+        if len(self.favicons) == 0:
+            return None
+
+        return self.favicons[0].url
 
     def getRedirection(self):
         from WebpageSaver.Cache import Page as DBPage

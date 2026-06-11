@@ -158,74 +158,63 @@ class API:
                        find_by_start: bool = False
                        ):
         u = URL(url)
+        mode = None
+        payload = list()
 
         # If URL is empty or not recognized as URL: Keywords search
-        if url == '' or u.host == None:
+        if mode == None and url == '' or u.host == None:
             pages = Page.select()
             if url != '':
-                pages = pages.where(Page.title.startswith(url))
+                pages = pages.where(Page.title.startswith(url)).where(Page.is_frame == 0)
+                mode = 'keywords_search'
+            else:
+                mode = 'empty_search'
 
             pages = pages.order_by(Page.taken_at.desc())
-            res = list()
 
             for p in pages:
                 m = p.toModel()
                 if conv:
-                    res.append(m.dump())
+                    payload.append(m.dump())
                 else:
-                    res.append(m)
-
-            return {
-                'type': 'keywords_search',
-                'items': res
-            }
+                    payload.append(m)
 
         # Finding by start of the URL
-        if find_by_start:
-            pages = Page.select().where(Page.url.startswith(url)).group_by(Page.url).order_by(Page.taken_at.desc())
-            res = list()
+        if mode == None and find_by_start:
+            pages = Page.select().where(Page.url.startswith(url)).where(Page.is_frame == 0).group_by(Page.url).order_by(Page.taken_at.desc())
+            mode = 'urls'
 
             for p in pages:
                 m = p.toModel()
                 if conv:
-                    res.append(m.dump())
+                    payload.append(m.dump())
                 else:
-                    res.append(m)
-
-            return {
-                'type': 'urls',
-                'items': res
-            }
+                    payload.append(m)
 
         # Thinking that it is a domain
-        if u.path == '/':
-            pages = Page.select().where(Page.domain == u.host).order_by(Page.taken_at.desc())
-            res = list()
+        if mode == None:
+            if u.path == '/':
+                mode = 'domain_search'
+                pages = Page.select().where(Page.domain == u.host).where(Page.is_frame == 0).order_by(Page.taken_at.desc())
 
-            for p in pages:
-                m = p.toModel()
-                if conv:
-                    res.append(m.dump())
-                else:
-                    res.append(m)
+                for p in pages:
+                    m = p.toModel()
+                    if conv:
+                        payload.append(m.dump())
+                    else:
+                        payload.append(m)
+            else:
+                mode = 'accurate_url'
+                pages = Page.select().where(Page.url == u.human_repr()).where(Page.is_frame == 0).order_by(Page.taken_at.desc())
 
-            return {
-                'type': 'domain_search',
-                'items': res,
-                'divided_by_months': [] # TODO
-            }
-        else:
-            pages = Page.select().where(Page.url == u.human_repr()).order_by(Page.taken_at.desc())
-            res = list()
+                for p in pages:
+                    m = p.toModel()
+                    if conv:
+                        payload.append(m.dump())
+                    else:
+                        payload.append(m)
 
-            for p in pages:
-                m = p.toModel()
-                if conv:
-                    res.append(m.dump())
-                else:
-                    res.append(m)
-
-            return {
-                'type': 'accurate_url',
-                'items': res
-            }
+        return {
+            'type': mode,
+            'items': payload
+        }

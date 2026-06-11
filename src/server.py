@@ -251,7 +251,7 @@ async def gpbid(request: web.Request):
             html = PageHTML.from_html(text)
 
             html.clear(page,
-                clear_js = query.get('remove_scripts') == 'on',
+                clear_js = query.get('remove_scripts', config.get('remove_scripts_by_default', True)) == 'on',
                 remove_integrity = query.get('remove_integrity') == 'on',
                 remove_inline_css = query.get('remove_inline_css') == 'on',
                 remove_styles = query.get('remove_styles') == 'on',
@@ -277,7 +277,11 @@ async def gpbid(request: web.Request):
 
             if query.get('original_links') != 'on':
                 html.make_links_local(page)
+
+            if query.get('original_iframes') != 'on':
                 html.make_iframes_local(page)
+
+            if query.get('original_canvas') != 'on':
                 html.make_canvases_local(page)
 
             #head_html = html.move_head()
@@ -391,11 +395,13 @@ def sfp(request: web.Request):
     q = query.get('q', '')
 
     res = api.findPagesByURL(url = q, conv = False)
+    items = res.get('items')
     search_type = res.get('type')
 
     return aiohttp_jinja2.render_template('search.html',request,{
         'q': q,
-        'items': res.get('items'),
+        'items': items,
+        'count': len(items),
         'search_type': search_type
     })
 

@@ -41,11 +41,11 @@ class Screenshot:
                 await canvas.evaluate(f"(el, id) => el.setAttribute('{page.getOrigAttr()}', id)", canvas_id)
                 screenshot_data = await canvas.evaluate("""
                     (canvas) => {
-                        return canvas.toDataURL('image/jpeg', 0.8);
+                        return canvas.toDataURL('image/png', 0.8);
                     }
                 """)
 
-                filepath = page.getThumbsDir().joinpath(f"{canvas_id}.jpeg")
+                filepath = page.getThumbsDir().joinpath(f"{canvas_id}.png")
 
                 with open(str(filepath), 'wb') as f:
                     #f.write(await canvas.screenshot(timeout = 5000, type='jpeg',))

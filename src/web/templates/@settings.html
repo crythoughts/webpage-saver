@@ -17,6 +17,10 @@
                     <input type="checkbox" name="b"{% if config.get('navigation_first_found', 1) == 1 %} checked{% endif %}>
                     Go to the first found page (with nearest creation date) if it not presented in found pages
                 </label>
+                <label>
+                    <input type="checkbox" name="r"{% if config.get('remove_scripts_by_default', 1) == 1 %} checked{% endif %}>
+                    Remove scripts by default
+                </label>
             </div>
             <b class="text-xl">Saving</b>
             <div>

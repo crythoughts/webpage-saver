@@ -3,23 +3,36 @@
 {% block page %}
     <script>{{sw_js|safe}}</script>
     <div class="w-full h-screen flex flex-col justify-center items-center">
-        <div class="logo pb-4">
+        <div class="logo mt-20">
             <a class="text-3xl">Webpage Saver</a>
         </div>
-        <div>
-            <form action="/page/search">
-                <input class="w-80 p-2 rounded-md bg-indigo-100" placeholder="Find by URL..." type="text" name="q">
+        <div class="mt-15">
+            <form action="/page/search" class="flex flex-col gap-5">
+                <input class="w-80 p-2 pl-5 rounded-md bg-purple-300" placeholder="Find by URL..." type="text" name="q">
 
-                <input class="p-2 rounded-md bg-indigo-100 cursor-pointer" type="submit" value="Search">
+                <div class="flex gap-2 justify-center">
+                    <a class="w-[50%]" href="/save">
+                        <input class="w-[100%] p-2 rounded-md bg-purple-100 cursor-pointer" type="button" value="Save">
+                    </a>
+                    <input class="w-[50%] p-2 rounded-md bg-purple-100 cursor-pointer" type="submit" value="Find">
+
+                </div>
+              
             </form>
         </div>
 
         <div class="pt-10">
             <ul class="flex flex-col gap-2 items-center">
-                <li><a href="/save">Save</a></li>
                 <li><a href="/webdrivers">Webdrivers</a></li>
                 <li><a href="/settings">Settings</a></li>
             </ul>
+        </div>
+
+        <div class="opacity-30 absolute left-[13%]">
+            <img src="/static/p1.png">
+        </div>
+        <div class="opacity-30 absolute right-[13%]">
+            <img src="/static/p2.png">
         </div>
     </div>
 {% endblock %}

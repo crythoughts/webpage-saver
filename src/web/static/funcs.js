@@ -1,3 +1,12 @@
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
 async function downloadWebdriver() {
     const d = document.querySelector('#download_w')
     const t = confirm('Download latest stable chromedriver?')
@@ -69,6 +78,14 @@ function save_submit(url, link_to = null) {
     })
 }
 
+function fastSaveByURL(node) {
+    const c = new URL(location.origin + '/save')
+    c.searchParams.set('preset_url', node.value)
+    c.searchParams.set('auto_run', 1)
+
+    location.assign(c.toString());
+}
+
 async function edit(page_id, new_taken) {
     const f = await fetch('/api/page?id='+page_id+'&new_taken=' + Number(new_taken), {method: 'PATCH'})
     location.reload()
@@ -100,4 +117,12 @@ function openPageInIframe(id) {
 function openPhoto(element, event) {
     element.parentNode.href = event.currentTarget.querySelector('img').dataset.url
     element.src = event.currentTarget.querySelector('img').src
+}
+
+function hover_search(event) {
+    const url = event.currentTarget.dataset.screenshot
+    if (url) {
+        document.querySelector('#hover_img').src = url
+    }
+    document.querySelector('#hover_url').innerHTML = escapeHtml(event.currentTarget.dataset.url)
 }
