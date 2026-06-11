@@ -4,6 +4,8 @@ from WebpageSaver import config
 from WebpageSaver.Crawler.Components.PageHTML import PageHTML
 from WebpageSaver.Display.AssetDisplayer import asset_displayer
 from WebpageSaver.Crawler.Components.JSFunctions import getSW
+from WebpageSaver.Crawler.Components.Utils import getCalendarForPages
+import urllib.parse
 
 from yarl import URL
 from pathlib import Path
@@ -393,17 +395,76 @@ def spw(request: web.Request):
 def sfp(request: web.Request):
     query = request.rel_url.query
     q = query.get('q', '')
+    exact_match = query.get('exact_match') == 'on'
+    display_mode = query.get('display_mode')
 
-    res = api.findPagesByURL(url = q, conv = False)
-    items = res.get('items')
+    res = api.findPagesByURL(url = q, conv = False, conv_models = False, exact_match = exact_match)
     search_type = res.get('type')
+    items = []
 
-    return aiohttp_jinja2.render_template('search.html',request,{
+    if display_mode == None:
+        match(search_type):
+            case 'keywords_search':
+                display_mode = 'mini'
+                items = res.get('items')
+            case 'empty_search':
+                display_mode = 'mini'
+                items = res.get('items')
+            case 'domain_search':
+                display_mode = 'calendar'
+            case 'urls':
+                display_mode = 'calendar'
+            case 'accurate_url':
+                display_mode = 'calendar'
+
+    ctx = {}
+
+    if display_mode == 'calendar':
+        c = getCalendarForPages(res.get('items'))
+        selected_year = int(query.get('year', datetime.now().year))
+        selected_month = query.get('month')
+        selected_day = query.get('day')
+
+        length = len(res.get('items'))
+        ctx['items'] = c
+        ctx['count'] = length
+        ctx.update({
+            'year': selected_year
+        })
+
+        try:
+            if selected_day and selected_month:
+                day = c.get('years').get(selected_year).get('months').get(int(selected_month)).get('days').get(int(selected_day))
+                ctx.update({
+                    'selected_day': day,
+                    'items': day.get('records'),
+                    'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year) + '&month=' + selected_month + '&day=' + selected_day
+                })
+        except Exception as e:
+            logging.exception(e)
+
+    else:
+        for item in res.get('items'):
+            ctx['items'].append(item.toModel())
+
+        ctx['count'] = len(ctx.get('items'))
+
+    ctx.update({
         'q': q,
-        'items': items,
-        'count': len(items),
-        'search_type': search_type
+        'search_type': search_type,
+        'exact_match': exact_match,
+        'url': res.get('url'),
+        'current_url': URL(request.url),
+        'quote': urllib.parse.quote,
+        'display_mode': display_mode
     })
+
+    ctx['count'] = len(ctx.get('items'))
+
+    if search_type in ['accurate_url', 'domain_search']:
+        ctx['append_to_header'] = True
+
+    return aiohttp_jinja2.render_template('search.html', request, ctx)
 
 @routes.get('/webdrivers')
 def sfp(request: web.Request):

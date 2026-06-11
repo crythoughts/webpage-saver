@@ -155,17 +155,25 @@ class API:
 
     def findPagesByURL(self, url: str, 
                        conv: bool = True,
-                       find_by_start: bool = False
+                       conv_models: bool = True,
+                       find_by_start: bool = False,
+                       exact_match: bool = False
                        ):
-        u = URL(url)
+
+        find_url = url
+
+        if find_url.startswith('http') == False:
+            find_url = 'https://' + url
+ 
+        u = URL(find_url)
         mode = None
         payload = list()
 
         # If URL is empty or not recognized as URL: Keywords search
-        if mode == None and url == '' or u.host == None:
+        if mode == None and (url == '' or u.host == None):
             pages = Page.select()
             if url != '':
-                pages = pages.where(Page.title.startswith(url)).where(Page.is_frame == 0)
+                pages = pages.where(Page.title.startswith(find_url)).where(Page.is_frame == 0)
                 mode = 'keywords_search'
             else:
                 mode = 'empty_search'
@@ -173,48 +181,74 @@ class API:
             pages = pages.order_by(Page.taken_at.desc())
 
             for p in pages:
-                m = p.toModel()
                 if conv:
-                    payload.append(m.dump())
+                    payload.append(p.toModel().dump())
                 else:
-                    payload.append(m)
+                    if conv_models:
+                        payload.append(p.toModel())
+                    else:
+                        payload.append(p)
 
         # Finding by start of the URL
         if mode == None and find_by_start:
-            pages = Page.select().where(Page.url.startswith(url)).where(Page.is_frame == 0).group_by(Page.url).order_by(Page.taken_at.desc())
+            pages = Page.select().where(Page.url.startswith(find_url)).where(Page.is_frame == 0).group_by(Page.url).order_by(Page.taken_at.desc())
             mode = 'urls'
 
             for p in pages:
-                m = p.toModel()
                 if conv:
-                    payload.append(m.dump())
+                    payload.append(p.toModel().dump())
                 else:
-                    payload.append(m)
+                    if conv_models:
+                        payload.append(p.toModel())
+                    else:
+                        payload.append(p)
 
         # Thinking that it is a domain
         if mode == None:
-            if u.path == '/':
+            if url.startswith('http') == False and (u.path == '/' or u.path == ''):
                 mode = 'domain_search'
-                pages = Page.select().where(Page.domain == u.host).where(Page.is_frame == 0).order_by(Page.taken_at.desc())
+                pages = Page.select()
+                find_url = u.host
 
+                if exact_match:
+                    pages = pages.where(Page.domain == u.host)
+                else:                        
+                    pages = pages.where(Page.domain.like(u.host))
+
+                pages = pages.where(Page.is_frame == 0).order_by(Page.taken_at.desc())
                 for p in pages:
-                    m = p.toModel()
                     if conv:
-                        payload.append(m.dump())
+                        payload.append(p.toModel().dump())
                     else:
-                        payload.append(m)
+                        if conv_models:
+                            payload.append(p.toModel())
+                        else:
+                            payload.append(p)
             else:
                 mode = 'accurate_url'
-                pages = Page.select().where(Page.url == u.human_repr()).where(Page.is_frame == 0).order_by(Page.taken_at.desc())
+
+                find_url = toURLWithoutMeaninglessDiffs(find_url)
+
+                pages = Page.select()
+
+                if exact_match:
+                    pages = pages.where(Page.url == find_url)
+                else:
+                    pages = pages.where(Page.url % find_url)
+
+                pages = pages.where(Page.is_frame == 0).order_by(Page.taken_at.desc())
 
                 for p in pages:
-                    m = p.toModel()
                     if conv:
-                        payload.append(m.dump())
+                        payload.append(p.toModel().dump())
                     else:
-                        payload.append(m)
+                        if conv_models:
+                            payload.append(p.toModel())
+                        else:
+                            payload.append(p)
 
         return {
             'type': mode,
-            'items': payload
+            'items': payload,
+            'url': find_url
         }

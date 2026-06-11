@@ -1,7 +1,10 @@
 {% extends '@layout.html' %}
 
 {% block body %}
+    <div class="hidden">
     {{search_type}}
+    {{count}}
+    </div>
 
     <div class="pl-10 pr-10 pt-5 pb-20 grid grid-cols-[1fr_0fr]">
         <div>
@@ -14,16 +17,40 @@
                         <p>"{{q}}"</p>
                     {% endif %}
                 </div>
-                <div class="flex flex-col pr-10 pt-5 pb-20">
-                    {% if count == 0 %}
-                        {% if search_type == 'empty_search' %}
-                            <div>No pages were archived.</div>
-                        {% else %}
-                            <div>Nothing found!</div>
-                        {% endif %}
-                    {% endif %}
+            {% endif %}
 
-                    {% for i in items %}
+            {% if search_type == 'accurate_url' or search_type == 'domain_search' %}
+                <div>
+                    {% if search_type == 'domain_search'%}
+                        <b>Domain:</b>
+                    {% endif %}
+                    <div>
+                        <b>{{url[0:1000]}}</b>
+                    </div>
+                    <div>
+                        {% if display_mode == 'calendar' %}
+                            <a href="?q={{quote(current_url.query.get('q'))}}">As list</a>
+                        {% else %}
+                            <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar">As calendar</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col pr-10 pt-5 pb-20">
+            {% if count == 0 %}
+                {% if search_type == 'empty_search' %}
+                    <div>No pages were archived.</div>
+                {% else %}
+                    <div>Nothing found!</div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {% if display_mode == 'mini' or (display_mode == 'calendar' and selected_day != None) %}
+            <div class="grid grid-cols-[1fr_,0fr]">
+                {% for i in items %}
                     <div onmouseover="hover_search(event)" data-url="{{i.url}}" data-screenshot="/page/screenshot?id={{i.identify}}&file=viewport.jpeg">
                         {% if i.getFavicon() %}
                             <img loading="lazy" src="{{i.getFavicon()}}" class="inline-block w-4 object-contain">
@@ -31,17 +58,87 @@
                             <div class="inline-block w-4 h-4"></div>
                         {% endif %}
                         <a href="/page/{{i.identify}}?mode=meta">{{i.getShortTitle(70)}}</a>
+                        {% if selected_day != None %}
+                            <span>{{i.getReadableTaken()}}</span>
+                        {% endif %}
                     </div>
+                {% endfor %}
+
+                <div class="w-40">
+                    <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
+                        <img class="min-h-20" id="hover_img">
+                        <span id="hover_url" class="text-sm"></span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if display_mode == 'items' %}
+            <div class="flex flex-col pr-10 pt-5 pb-20">
+                {% for i in items %}
+                    <div class="flex flex-row gap-5">
+                        <img class="max-h-40 w-20 object-contain" src="/page/screenshot?id={{i.identify}}&file=viewport.jpeg" loading="lazy">
+
+                        <div class="flex flex-col">
+                            <a title="{{i.url}}" href="/page/{{i.identify}}">{{i.title}}</a>
+
+                            <div>
+                                <span class="text-zinc-400">{{i.getReadableTaken()}}</span>
+                                <span class="text-zinc-300">|</span>
+                                <a href="/page/{{i.identify}}?mode=meta" class="text-zinc-400">About this page</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if display_mode == 'calendar' and selected_day == None %}
+        <div>
+            <div id="years">
+                {% for year_id, itm in items.get('years').items() %}
+                    <div class="inline-block p-2 {% if year == year_id %} bg-green-100{% else %} bg-zinc-200{% endif %}">
+                        <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year_id}}">{{year_id}}</a>
+
+                        <span style="font-size: 14px; margin-left: 10px;">
+                            {{ itm.total_records_in_year }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if year and selected_day == None %}
+                <div id="months">
+                    {% for id, month in items.get('years').get(year).get('months').items() %}
+                        <div class="month">
+                            <div class="months {% if month.get('total_records') > 0 %}has-records{% endif %}">
+                                <div>
+                                    {{month.get('month_name')}}
+                                    {% if month.get('total_records') > 0 %}
+                                        <span style="font-size: 11px;">({{ month.get('total_records') }})</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="days grid grid-cols-[repeat(9_,1fr)]">
+                            {% for day_num, day_data in month.get('days').items() %}
+                                {% if month.get('days').get(day_num).get('has_records') %}
+                                    <a class="inline-block day-cell has-records bg-green-200 p-4" href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year}}&month={{id}}&day={{day_num}}" class="inline-block day-cell has-records">
+                                        <div class="day-number">{{ day_num }}</div>
+                                    </a>
+                                {% else %}
+                                    <div class="inline-block day-cell p-4">
+                                        <div class="day-number">{{ day_num }}</div>
+                                    </div>
+                                {% endif %}
+
+                            {% endfor %}
+                            </div>
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}
         </div>
-        <div class="w-40">
-            <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
-                <img class="min-h-20" id="hover_img">
-                <span id="hover_url" class="text-sm"></span>
-            </div>
-        </div>
+        {% endif %}
     </div>
 
 {% endblock %}

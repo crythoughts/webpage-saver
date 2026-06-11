@@ -31,6 +31,7 @@
 - [x] do not add useless spaces
 - [ ] brotli support
 - [ ] timeout
+- [ ] favicon downloading
 
 **webdrivers**
 
