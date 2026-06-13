@@ -400,24 +400,22 @@ def sfp(request: web.Request):
 
     res = api.findPagesByURL(url = q, conv = False, conv_models = False, exact_match = exact_match)
     search_type = res.get('type')
-    items = []
+    ctx = {}
 
     if display_mode == None:
         match(search_type):
             case 'keywords_search':
                 display_mode = 'mini'
-                items = res.get('items')
+                ctx['items'] = res.get('items')
             case 'empty_search':
                 display_mode = 'mini'
-                items = res.get('items')
+                ctx['items'] = res.get('items')
             case 'domain_search':
                 display_mode = 'calendar'
             case 'urls':
                 display_mode = 'calendar'
             case 'accurate_url':
                 display_mode = 'calendar'
-
-    ctx = {}
 
     if display_mode == 'calendar':
         c = getCalendarForPages(res.get('items'))
@@ -433,19 +431,35 @@ def sfp(request: web.Request):
         })
 
         try:
-            if selected_day and selected_month:
-                day = c.get('years').get(selected_year).get('months').get(int(selected_month)).get('days').get(int(selected_day))
-                ctx.update({
-                    'selected_day': day,
-                    'items': day.get('records'),
-                    'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year) + '&month=' + selected_month + '&day=' + selected_day
-                })
+            if selected_month != None:
+                if selected_day != None:
+                    day = c.get('years').get(selected_year).get('months').get(int(selected_month)).get('days').get(int(selected_day))
+                    display_mode = 'mini'
+                    ctx.update({
+                        'selected_day': day,
+                        'items': day.get('records'),
+                        'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
+                    })
+                else:
+                    items = list()
+                    month = c.get('years').get(selected_year).get('months').get(int(selected_month))
+                    for day in month.get('days').values():
+                        for item in day.get('records'):
+                            items.append(item)
+
+                    display_mode = 'mini'
+                    ctx.update({
+                        'selected_month': month,
+                        'items': items,
+                        'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
+                    })
+
         except Exception as e:
             logging.exception(e)
 
     else:
         for item in res.get('items'):
-            ctx['items'].append(item.toModel())
+            ctx.get('items').append(item.toModel())
 
         ctx['count'] = len(ctx.get('items'))
 

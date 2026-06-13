@@ -48,12 +48,13 @@ def _getCalendarStructure(year, month, records_dict: list):
     for day in range(1, days_in_month + 1):
         date_key = datetime(year, month, day)
         day_records = records_dict.get(year, {}).get(month, {}).get(day, [])
-
+        length = len(day_records)
         month_structure['days'][day] = {
             'date': date_key.strftime('%Y-%m-%d'),
             'weekday': calendar.day_name[date_key.weekday()],
             'records': day_records,
-            'has_records': len(day_records) > 0
+            'records_count': length,
+            'has_records': length > 0
         }
     
     return month_structure

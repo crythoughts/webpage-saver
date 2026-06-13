@@ -13,7 +13,7 @@
             <input {% if append_to_header %}value="{{q}}"{% endif %} name="q" id="global_query" placeholder="Find by URL..." class="rounded pr-3 pl-3 w-70 h-full bg-stone-200" type="text" id="search_bar">
             <input class="rounded pr-2 pl-2 pt-1 pb-1 bg-purple-400 cursor-pointer" type="submit" value="Find">
             <input class="rounded pr-2 pl-2 pt-1 pb-1 bg-purple-400 cursor-pointer" type="button" value="Save" onclick="fastSaveByURL(global_query)">
-        
+
             {% if append_to_header %}
                 <label class="pl-2 text-gray-300 inline-block">
                     <input type="checkbox" name="exact_match"{% if exact_match %} checked{% endif %}>

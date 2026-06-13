@@ -4,9 +4,10 @@
     <div class="hidden">
     {{search_type}}
     {{count}}
+    {{display_mode}}
     </div>
 
-    <div class="pl-10 pr-10 pt-5 pb-20 grid grid-cols-[1fr_0fr]">
+    <div class="pl-10 pr-10 pt-5 pb-20 {% if display_mode == 'mini' %}grid grid-cols-[1fr_0fr]{% endif %}">
         <div>
             {% if search_type == 'empty_search' or search_type == 'keywords_search' %}
                 <div>
@@ -36,33 +37,31 @@
                     </div>
                 </div>
             {% endif %}
-        </div>
 
-        <div class="flex flex-col pr-10 pt-5 pb-20">
             {% if count == 0 %}
-                {% if search_type == 'empty_search' %}
-                    <div>No pages were archived.</div>
-                {% else %}
-                    <div>Nothing found!</div>
-                {% endif %}
+                <div class="flex flex-col pr-10 pt-5 pb-20">
+                    {% if search_type == 'empty_search' %}
+                        <div>No pages were archived.</div>
+                    {% else %}
+                        <div>Nothing found!</div>
+                    {% endif %}
+                </div>
             {% endif %}
         </div>
 
-        {% if display_mode == 'mini' or (display_mode == 'calendar' and selected_day != None) %}
-            <div class="grid grid-cols-[1fr_,0fr]">
+        {% if display_mode == 'mini' %}
+            <div class="grid grid-cols-[1fr_0fr]">
+                <div>
                 {% for i in items %}
                     <div onmouseover="hover_search(event)" data-url="{{i.url}}" data-screenshot="/page/screenshot?id={{i.identify}}&file=viewport.jpeg">
-                        {% if i.getFavicon() %}
-                            <img loading="lazy" src="{{i.getFavicon()}}" class="inline-block w-4 object-contain">
-                        {% else %}
-                            <div class="inline-block w-4 h-4"></div>
-                        {% endif %}
+                        <img loading="lazy" src="{{i.getFavicon()}}" class="inline-block w-4 object-contain">
                         <a href="/page/{{i.identify}}?mode=meta">{{i.getShortTitle(70)}}</a>
-                        {% if selected_day != None %}
+                        {% if selected_day != None or selected_month != None %}
                             <span>{{i.getReadableTaken()}}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
+                </div>
 
                 <div class="w-40">
                     <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
@@ -93,44 +92,48 @@
             </div>
         {% endif %}
 
-        {% if display_mode == 'calendar' and selected_day == None %}
+        {% if display_mode == 'calendar' %}
         <div>
-            <div id="years">
+            <div id="years" class="pb-5">
                 {% for year_id, itm in items.get('years').items() %}
-                    <div class="inline-block p-2 {% if year == year_id %} bg-green-100{% else %} bg-zinc-200{% endif %}">
-                        <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year_id}}">{{year_id}}</a>
+                    <a class="inline-block pt-1 pb-1 pl-2 pr-2 {% if year == year_id %} bg-green-200{% else %} bg-zinc-200 hover:bg-zinc-100{% endif %}" href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year_id}}">
+                        <span>{{year_id}}</span>
 
                         <span style="font-size: 14px; margin-left: 10px;">
                             {{ itm.total_records_in_year }}
                         </span>
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
-            {% if year and selected_day == None %}
-                <div id="months">
+            {% if year %}
+                <div id="months" class="grid grid-cols-[1fr_1fr_1fr] gap-5">
                     {% for id, month in items.get('years').get(year).get('months').items() %}
                         <div class="month">
-                            <div class="months {% if month.get('total_records') > 0 %}has-records{% endif %}">
-                                <div>
+                            <div class="{% if month.get('total_records') > 0 %}has-records{% endif %}">
+                                <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year}}&month={{id}}" >
                                     {{month.get('month_name')}}
                                     {% if month.get('total_records') > 0 %}
                                         <span style="font-size: 11px;">({{ month.get('total_records') }})</span>
                                     {% endif %}
-                                </div>
+                                </a>
                             </div>
 
-                            <div class="days grid grid-cols-[repeat(9_,1fr)]">
+                            <div class="pt-5 days grid grid-cols-[repeat(9_,1fr)] gap-[1px_1px]">
                             {% for day_num, day_data in month.get('days').items() %}
-                                {% if month.get('days').get(day_num).get('has_records') %}
-                                    <a class="inline-block day-cell has-records bg-green-200 p-4" href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year}}&month={{id}}&day={{day_num}}" class="inline-block day-cell has-records">
-                                        <div class="day-number">{{ day_num }}</div>
-                                    </a>
-                                {% else %}
-                                    <div class="inline-block day-cell p-4">
-                                        <div class="day-number">{{ day_num }}</div>
-                                    </div>
+                                {% set count = month.get('days').get(day_num).get('records_count') %}
+                                <a class="leading-5 text-xs inline-flex items-center justify-center day-cell 
+                                max-h-[20px]
+                                max-w-[20px]
+                                h-[20px]
+                                w-[20px]
+                                {% if month.get('days').get(day_num).get('has_records') == False %}hover:bg-gray-100{% else %}
+                                has-records bg-green-200 hover:bg-green-300
                                 {% endif %}
-
+                                {% if count == 4 %}p-1{% endif %}
+                                " 
+                                href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar&year={{year}}&month={{id}}&day={{day_num}}" class="inline-block day-cell has-records">
+                                    {{ day_num }}
+                                </a>
                             {% endfor %}
                             </div>
                         </div>

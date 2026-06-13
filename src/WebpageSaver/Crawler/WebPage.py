@@ -351,11 +351,13 @@ class WebPage(BaseModel):
 
         return d + '...'
 
+    # TODO download favicons
     def getFavicon(self):
-        if len(self.favicons) == 0:
-            return None
-
-        return self.favicons[0].url
+        try:
+            return self.favicons[0].url
+        except Exception as e:
+            logging.exception(e)
+            return '/static/no_asset.jpg'
 
     def getRedirection(self):
         from WebpageSaver.Cache import Page as DBPage
