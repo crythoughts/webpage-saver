@@ -10,6 +10,7 @@ from WebpageSaver.Crawler.Assets.Script import Script
 from WebpageSaver.Crawler.Components.JSFunctions import getNavRemoveScript, getLinksClickCatcherScript
 from bs4.dammit import EncodingDetector
 from bs4 import BeautifulSoup
+from collections import Counter
 from typing import Generator
 from WebpageSaver import config
 from yarl import URL as UURL
@@ -33,9 +34,15 @@ class PageHTML:
         if take_default:
             yield Favicon(url = orig_page.base_url + '/favicon.ico')
 
-    def get_media(self, orig_page: WebPage, selector: str = None, original_urls: bool = True, set_local_urls: bool = False) -> Generator:
+    def get_media(self, orig_page: WebPage, selector: str = None, original_urls: bool = True, set_local_urls: bool = False, show_from_requests: bool = False) -> Generator:
         if selector == None:
             selector = "[src]:not(iframe)"
+
+        if show_from_requests:
+            for item in orig_page.getMediaFromRequests(set_local_urls = set_local_urls, selector = selector):
+                yield item
+
+            return
 
         for tag in self.bs.select(selector):
             item = Media()
@@ -397,3 +404,37 @@ class PageHTML:
         _src.bs = BeautifulSoup(html, 'html.parser')
 
         return _src
+
+    def _getStats(self) -> dict[str, int]:
+        tag_counter = Counter(tag.name for tag in self.bs.find_all())
+
+        return dict(tag_counter.most_common())
+
+    def getStats(self):
+        tag_counter = Counter()
+        attr_counters = {} 
+
+        for tag in self.bs.find_all():
+            tag_name = tag.name
+            tag_counter[tag_name] += 1
+
+            if tag_name not in attr_counters:
+                attr_counters[tag_name] = Counter()
+            
+            if tag.attrs:
+                attr_counters[tag_name].update(tag.attrs.keys())
+        
+        result = {}
+        for tag, count in tag_counter.most_common():
+            if tag in attr_counters and attr_counters[tag]:
+                result[tag] = {
+                    'count': count,
+                    'attributes': dict(attr_counters[tag].most_common())
+                }
+            else:
+                result[tag] = {
+                    'count': count,
+                    'attributes': dict()
+                }
+        
+        return result

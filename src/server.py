@@ -174,6 +174,7 @@ async def gpbid(request: web.Request):
 
         case 'media':
 
+            show_from_html = query.get('show_from_html') == 'on'
             mmode = query.get('mmode')
             text = page.getRootFile().read_text(encoding = encoding)
             html = PageHTML.from_html(text)
@@ -192,12 +193,14 @@ async def gpbid(request: web.Request):
                 case 'audio':
                     selectors = 'audio[src]'
 
-            medias = html.get_media(page, selectors, set_local_urls = True)
+            medias = html.get_media(page, selectors, set_local_urls = True, show_from_requests = show_from_html == False)
 
             return aiohttp_jinja2.render_template('media.html', request, {
                 'media': medias,
                 'mmode': mmode,
-                'back_btn': '/page/' + page_id + '?mode=meta'
+                'mmodes': {'': 'Type', 'all': 'All', 'img': 'Images', 'video': 'Videos'},
+                'back_btn': '/page/' + page_id + '?mode=meta',
+                'show_from_html': query.get('show_from_html')
             })
 
         case 'hyperlinks':
@@ -227,6 +230,21 @@ async def gpbid(request: web.Request):
                 'count': len(pages)
             })
 
+        case 'stats':
+
+            try:
+                text = page.getIndexPageText(encoding)
+            except UnicodeDecodeError as e:
+                logging.exception(e)
+                return web.HTTPFound(location = '/page/{0}?mode=page_options&error=encoding'.format(page.identify))
+
+            html = PageHTML.from_html(text)
+
+            return aiohttp_jinja2.render_template('stats.html', request, {
+                'back_btn': '/page/' + page_id + '?mode=meta',
+                'stats': html.getStats(),
+            })
+
         # Page display
         case _:
 
@@ -247,7 +265,6 @@ async def gpbid(request: web.Request):
                 })
 
             try:
-                #text = page.getRootFile().read_text(encoding = encoding)
                 text = page.getIndexPageText(encoding)
             except UnicodeDecodeError as e:
                 logging.exception(e)

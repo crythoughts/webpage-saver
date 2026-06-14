@@ -6,11 +6,17 @@
     <form id="changer">
         <input type="hidden" name="mode" value="media">
         <select class="bg-white pt-1 pb-1 pl-5 pr-5" onchange="changer.submit()" name="mmode">
-            <option value="" selected>Type</option>
-            <option value="all">All</option>
-            <option value="img">Images</option>
-            <option value="video">Videos</option>
+            {% for i, v in mmodes.items() %}
+                <option value="{{i}}" {% if i == mmode %}selected{% endif %}>{{v}}</option>
+            {% endfor %}
         </select>
+
+        {% if mmode != 'all' and mmode != '' %}
+            <label class="pl-5">
+                <input type="checkbox" onchange="changer.submit()" {% if show_from_html == 'on' %}checked{% endif %} name="show_from_html">
+                Get from HTML
+            </label>
+        {% endif %}
     </form>
 
     <div class="pt-5">

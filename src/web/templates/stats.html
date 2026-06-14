@@ -1,0 +1,38 @@
+{% extends '@layout.html' %}
+
+{% block body %}
+    <div class="p-5">
+        <table class="border-separate border-spacing-x-5">
+            <thead>
+                <tr>
+                    <td>Tag</td>
+                    <td class="w-[60%]">Count</td>
+                    <td>Attributes</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i, l in stats.items() %}
+                    <tr>
+                        <td class="align-top">{{i}}</td>
+                        <td class="flex gap-5 align-top">
+                            {{l.get('count')}}
+                        </td>
+                        <td>
+                            <table class="border-separate border-spacing-x-5">
+                                <tbody>
+                                {% for a, b in l.get('attributes').items() %}
+                                    <tr>
+                                        <td>{{a}}</td>
+                                        <td>{{b}}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}

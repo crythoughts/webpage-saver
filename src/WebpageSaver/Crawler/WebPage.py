@@ -373,3 +373,30 @@ class WebPage(BaseModel):
         d = DBPage.select().where(DBPage.path_to == self.redirected_to).first()
         if d:
             return d.toModel()
+
+    def getMediaFromRequests(self, set_local_urls: bool = True, selector: str = '[src]'):
+        check_exts = []
+        check_ct = ''
+
+        match(selector):
+            case 'img[src]':
+                check_exts = ['jpg', 'png']
+                check_ct = 'image/'
+            case 'video[src]':
+                check_exts = ['mp4', 'mov']
+                check_ct = 'video/'
+
+        for r, e in self.assets_links.items():
+            u = URL(e.url)
+            content_type = e.content_type
+            url = '/page/asset?id={0}&path={1}'.format(self.identify, r)
+            if set_local_urls == False:
+                url = e.url
+
+            asset = e.asset
+            asset.local_url = url
+
+            if content_type != None and content_type.startswith(check_ct):
+                yield asset
+            elif u.suffix != None and u.suffix in check_exts:
+                yield asset
