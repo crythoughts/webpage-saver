@@ -29,14 +29,14 @@
                         <b>{{url[0:1000]}}</b>
                     </div>
                     <div>
-                        {% if selected_day == None or selected_month == None %}
+                        {% if selected_day == None or selected_month == None or True %}
                             {% if display_mode == 'calendar' %}
-                                <a href="?q={{quote(current_url.query.get('q'))}}">As list</a>
+                                <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=mini">As list</a>
                             {% else %}
                                 <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar">As calendar</a>
                             {% endif %}
                         {% endif %}
-                        
+
                         <span class="text-xl">
                             {% if selected_day %}
                                 {{selected_day.get('date')}}
@@ -72,7 +72,7 @@
                         {% if selected_day %}
                             <span>{{i.getReadableTaken(with_day = False)}}</span>
                         {% endif %}
-                        {% if selected_month %}
+                        {% if selected_day %}
                             <span>{{i.getReadableTaken()}}</span>
                         {% endif %}
                     </div>

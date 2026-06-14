@@ -22,6 +22,14 @@
                     z-index: 9999999;
                     box-shadow: 0px 0px 50px 0px rgba(34, 60, 80, 0.3);
                 }
+
+                #p${class_name} a {
+                    font-size: 16px !important;
+                    color: black !important;
+                    text-align: left !important;
+                    font-family: Times !important;
+                    background-color: unset !important;
+                }
             </style>
             <div id="p${class_name}">
                 <a href="/page/${data.identify}?mode=meta">About</a>

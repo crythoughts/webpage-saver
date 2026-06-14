@@ -27,8 +27,8 @@
 - [x] do not add useless spaces
 - [ ] timeout
 - [ ] favicon downloading
-- [ ] view assets from requests
-- [ ] linked pages: show from all pages with this url
+- [x] view assets from requests
+- [x] linked pages: show from all pages with this url
 
 **webdrivers**
 
@@ -43,4 +43,4 @@
 **maybe not**
 
 - [ ] brotli support
-- [ ] tag stats
+- [x] tag stats

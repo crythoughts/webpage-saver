@@ -221,13 +221,15 @@ async def gpbid(request: web.Request):
 
         case 'linked':
 
+            every_pages = query.get('every') == 'on'
             pages = list(page.linked_pages)
 
             return aiohttp_jinja2.render_template('linked_pages.html', request, {
                 'page': page,
                 'back_btn': '/page/' + page_id + '?mode=meta',
-                'linked': page.getLinkedPages(),
-                'count': len(pages)
+                'linked': page.getLinkedPages(every_pages = every_pages),
+                'count': len(pages),
+                'every_pages': every_pages
             })
 
         case 'stats':
@@ -341,12 +343,16 @@ async def gpa(request: web.Request):
     req = None
 
     if asset_url != None:
-        asset_url = urllib.parse.unquote(asset_url)
-        _ = page.getAssetByUrl(asset_url, query.get('content_type'))
+        param_name = 'internal_content_type_param_and_i_hope_noone_will_use_this_in_real_cases'
+        asset_url = URL(urllib.parse.unquote(asset_url))
+        query_dict = dict(asset_url.query)
+        query_dict.pop(param_name, None)
+
+        _ = page.getAssetByUrl(str(asset_url.with_query(query_dict)), query.get(param_name))
 
         # Not found 
         if _ == None:
-            return asset_displayer.getResponseByContentType(query.get('content_type'))
+            return asset_displayer.getResponseByContentType(query.get(param_name, 'image/jpeg'))
 
         path_id = _[0]
         req = _[1]

@@ -52,8 +52,6 @@ self.addEventListener('fetch', async event => {
     }
 
     const should_proxy = should_proxy_be_applied && should_asset_be_proxied;
-    const page_ids = ref.pathname.split('/');
-    const page_id = page_ids[page_ids.length - 1];
 
     // console.log( request, ref.pathname, u, u.pathname.startsWith('/page/asset'), ref.searchParams.get('mode'), u.pathname, should_proxy, should_proxy_be_applied, should_asset_be_proxied)
 
@@ -75,6 +73,9 @@ self.addEventListener('fetch', async event => {
             if (client) {
                 v0 = new URL(client.url);
             }
+            const page_ids = v0.pathname.split('/');
+            const page_id = page_ids[page_ids.length - 1];
+
             const v = v0.pathname;
             const v1 = v.split('/');
             const v2 = v1[v1.length - 1]
@@ -91,7 +92,7 @@ self.addEventListener('fetch', async event => {
                 nu.searchParams.set('id', v2);
                 nu.searchParams.set('asset_url', u.href);
             }
-            nu.searchParams.set('content_type', content_type);
+            nu.searchParams.set('internal_content_type_param_and_i_hope_noone_will_use_this_in_real_cases', content_type);
 
             return fetch(String(nu), {
                 mode: 'cors',

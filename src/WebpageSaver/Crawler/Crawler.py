@@ -279,7 +279,12 @@ class Crawler:
         # It will skip other stages of redirect (if they are more than 1), but anyway.
         #print(browser_page.getFirstRequestEver())
 
-        status = browser_page.getFirstRequestEver().response.status
+        status = 200
+
+        try:
+            status = browser_page.getFirstRequestEver().response.status
+        except Exception as e:
+            logging.exception(e)
 
         if str(status)[0] == '3':
             logging.info('URL redirected')

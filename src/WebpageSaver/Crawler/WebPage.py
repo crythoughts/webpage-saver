@@ -6,6 +6,7 @@ from WebpageSaver.Crawler.Assets.Meta import Meta
 from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 from WebpageSaver.Crawler.Components.Canvas import Canvas
+from WebpageSaver.Crawler.Components.Utils import toURLWithoutMeaninglessDiffs
 from WebpageSaver import config
 from yarl import URL
 from functools import cache
@@ -318,8 +319,20 @@ class WebPage(BaseModel):
 
         return found
 
-    def getLinkedPages(self) -> Generator:
+    def getLinkedPages(self, every_pages: bool = False) -> Generator:
         from WebpageSaver.Cache import Page as DBPage
+
+        if every_pages:
+            p = DBPage.select().where(DBPage.url == toURLWithoutMeaninglessDiffs(self.url)).order_by(DBPage.taken_at.desc())
+            linked = list()
+            for i in p:
+                for f in i.toModel().linked_pages:
+                    linked.append(f)
+
+            for g in DBPage.select().where(DBPage.path_to.in_(linked)).order_by(DBPage.taken_at.desc()):
+                yield g.toModel()
+
+            return
 
         if self._cached_links == None:
             self._cached_links = DBPage.select().where(DBPage.path_to.in_(self.linked_pages)).order_by(DBPage.taken_at.desc())
