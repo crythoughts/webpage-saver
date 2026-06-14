@@ -126,7 +126,11 @@ class WebPage(BaseModel):
         return self.identify
 
     def getScreenshotURL(self, filename: str = 'viewport.jpeg'):
-        return '/page/screenshot?id={0}&file={1}'.format(self.identify, filename)
+        ids = self.identify
+        if self.redirected_to:
+            ids = self.redirected_to
+ 
+        return '/page/screenshot?id={0}&file={1}'.format(ids, filename)
 
     def getDir(self) -> Path:
         '''
@@ -200,11 +204,15 @@ class WebPage(BaseModel):
         self.relative_url = u
         self.base_url = u
 
-    def getReadableTaken(self):
+    def getReadableTaken(self, with_day: bool = True):
         if self.taken == None:
             return None
 
-        return datetime.fromtimestamp(self.taken).strftime("%Y/%m/%d, %H:%M:%S")
+        formats = '%Y/%m/%d, %H:%M:%S'
+        if with_day == False:
+            formats = '%H:%M:%S'
+
+        return datetime.fromtimestamp(self.taken).strftime(formats)
 
     def getAssets(self) -> Generator[GotRequest]:
         for i, v in self.assets_links.items():

@@ -7,7 +7,7 @@
     {{display_mode}}
     </div>
 
-    <div class="pl-10 pr-10 pt-5 pb-20 {% if display_mode == 'mini' %}grid grid-cols-[1fr_0fr]{% endif %}">
+    <div class="pl-10 pr-10 pt-5 pb-20">
         <div>
             {% if search_type == 'empty_search' or search_type == 'keywords_search' %}
                 <div>
@@ -29,11 +29,22 @@
                         <b>{{url[0:1000]}}</b>
                     </div>
                     <div>
-                        {% if display_mode == 'calendar' %}
-                            <a href="?q={{quote(current_url.query.get('q'))}}">As list</a>
-                        {% else %}
-                            <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar">As calendar</a>
+                        {% if selected_day == None or selected_month == None %}
+                            {% if display_mode == 'calendar' %}
+                                <a href="?q={{quote(current_url.query.get('q'))}}">As list</a>
+                            {% else %}
+                                <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar">As calendar</a>
+                            {% endif %}
                         {% endif %}
+                        
+                        <span class="text-xl">
+                            {% if selected_day %}
+                                {{selected_day.get('date')}}
+                            {% endif %}
+                            {% if selected_month %}
+                                {{selected_month.get('month_name')}} of {{selected_month.get('year')}}
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
             {% endif %}
@@ -49,25 +60,34 @@
             {% endif %}
         </div>
 
+        <div>
         {% if display_mode == 'mini' %}
-            <div class="grid grid-cols-[1fr_0fr]">
-                <div>
+            <div id="mini_list" class="grid grid-cols-[1fr_0fr]">
+                <div class="min-w-0 truncate">
                 {% for i in items %}
-                    <div onmouseover="hover_search(event)" data-url="{{i.url}}" data-screenshot="/page/screenshot?id={{i.identify}}&file=viewport.jpeg">
+                    <div onmouseover="hover_search(event)" data-id="{{i.identify}}" data-url="{{i.url}}" data-screenshot="{{i.getScreenshotURL()}}">
                         <img loading="lazy" src="{{i.getFavicon()}}" class="inline-block w-4 object-contain">
-                        <a href="/page/{{i.identify}}?mode=meta">{{i.getShortTitle(70)}}</a>
-                        {% if selected_day != None or selected_month != None %}
+
+                        <a href="/page/{{i.identify}}?mode=meta">{{i.getShortTitle(60)}}</a>
+                        {% if selected_day %}
+                            <span>{{i.getReadableTaken(with_day = False)}}</span>
+                        {% endif %}
+                        {% if selected_month %}
                             <span>{{i.getReadableTaken()}}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
                 </div>
 
-                <div class="w-40">
+                <div class="w-50">
+                    {% if count > 0 %}
                     <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
-                        <img class="min-h-20" id="hover_img">
+                        <a id="page_id">
+                            <img src="/static/not_selected.jpg" class="h-30 object-contain" id="hover_img">
+                        </a>
                         <span id="hover_url" class="text-sm"></span>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}
@@ -142,6 +162,7 @@
             {% endif %}
         </div>
         {% endif %}
+        </div>
     </div>
 
 {% endblock %}

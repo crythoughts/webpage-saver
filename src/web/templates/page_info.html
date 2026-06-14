@@ -11,11 +11,11 @@
         <div class="relative">
             <div id="screenshot">
                 <a href="/page/screenshot?id={{page.identify}}&file=viewport.jpeg">
-                    <img class="w-full" src="/page/screenshot?id={{page.identify}}&file=viewport.jpeg">
+                    <img class="w-full" src="{{page.getScreenshotURL()}}">
                 </a>
                 
                 <div class="rounded-tl-sm absolute bottom-0 right-0 p-2 opacity-50 bg-black">
-                    <a class="text-white" href="/page/screenshot?id={{page.identify}}&file=fullscreen.jpeg">Fullscreen</a>
+                    <a class="text-white" href="{{page.getScreenshotURL('fullscreen.jpeg')}}">Fullscreen</a>
                 </div>
             </div>
         </div>
@@ -66,6 +66,9 @@
     <div class="pt-5">
         <div>
             <a href="javascript:deletePage('{{page.identify}}')" style="color:red;">Delete</a>
+        </div>
+        <div>
+            <a data-taken="{{page.taken}}" href="javascript:void(0)" onclick="editPage('{{page.identify}}', event)">Edit</a>
         </div>
     </div>
 

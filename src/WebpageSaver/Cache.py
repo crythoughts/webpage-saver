@@ -18,6 +18,7 @@ class Page(BaseModel):
     title = TextField(default = 'Untitled')
     path_to = TextField(unique=True)
     taken_at = FloatField()
+    is_redirect = BooleanField(default = 0)
     is_frame = BooleanField(default = 0)
     url = TextField()
     domain = TextField()
@@ -31,6 +32,9 @@ class Page(BaseModel):
         new.title = model.title
         new.path_to = path_to
         new.is_frame = int(model.is_iframe)
+
+        if model.redirected_to != None:
+            new.is_redirect = 1
 
         # Removing protocol and "//"
         new.url = toURLWithoutMeaninglessDiffs(model.url)

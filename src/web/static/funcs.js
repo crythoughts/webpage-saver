@@ -97,6 +97,21 @@ function deletePage(page_id) {
     }
 }
 
+function editPage(page_id, event) {
+    event.target.parentNode.insertAdjacentHTML('beforeend', `
+        <div>
+            <b>New date</b>
+            <input type="text" value="${event.target.dataset.taken}" class="bg-white" id="page_new_date">
+        </div>
+        <input type="button" class="bg-white" id="save_btn" value="Save">
+    `)
+    event.target.remove()
+    document.querySelector('#save_btn').addEventListener('click', (e) => {
+        const date = page_new_date.value;
+        fetch('/api/page?id='+page_id + '&new_taken=' + date, {method: 'PATCH'}).then(location.reload())
+    })
+}
+
 function openPageInIframe(id) {
     if (document.querySelector('#page-iframe')) {
         return
@@ -121,8 +136,10 @@ function openPhoto(element, event) {
 
 function hover_search(event) {
     const url = event.currentTarget.dataset.screenshot
+    const id = event.currentTarget.dataset.id
     if (url) {
-        document.querySelector('#hover_img').src = url
+        document.querySelector('#hover_img').src = url + '&file=viewport.jpeg'
     }
+    document.querySelector('#page_id').setAttribute('href', '/page/' + id)
     document.querySelector('#hover_url').innerHTML = escapeHtml(event.currentTarget.dataset.url)
 }

@@ -16,6 +16,7 @@ import aiohttp_jinja2
 from aiohttp import web
 import jinja2
 import urllib
+import traceback
 
 api = API()
 cors_headers = {
@@ -431,33 +432,33 @@ def sfp(request: web.Request):
         })
 
         try:
-            if selected_month != None:
-                if selected_day != None:
-                    day = c.get('years').get(selected_year).get('months').get(int(selected_month)).get('days').get(int(selected_day))
-                    display_mode = 'mini'
-                    ctx.update({
-                        'selected_day': day,
-                        'items': day.get('records'),
-                        'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
-                    })
-                else:
-                    items = list()
-                    month = c.get('years').get(selected_year).get('months').get(int(selected_month))
-                    for day in month.get('days').values():
-                        for item in day.get('records'):
-                            items.append(item)
+            if selected_month != None and selected_day != None:
+                day = c.get('years').get(selected_year).get('months').get(int(selected_month)).get('days').get(int(selected_day))
+                display_mode = 'mini'
+                ctx.update({
+                    'selected_day': day,
+                    'items': day.get('records'),
+                    'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
+                })
+            if selected_month != None and selected_day == None:
+                items = list()
+                month = c.get('years').get(selected_year).get('months').get(int(selected_month))
+                for day in month.get('days').values():
+                    for item in day.get('records'):
+                        items.append(item)
 
-                    display_mode = 'mini'
-                    ctx.update({
-                        'selected_month': month,
-                        'items': items,
-                        'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
-                    })
+                display_mode = 'mini'
+                ctx.update({
+                    'selected_month': month,
+                    'items': items,
+                    'back_btn': '/page/search?q=' + q +'&display_mode=calendar&year=' + str(selected_year)
+                })
 
         except Exception as e:
             logging.exception(e)
 
     else:
+        ctx['items'] = list()
         for item in res.get('items'):
             ctx.get('items').append(item.toModel())
 
