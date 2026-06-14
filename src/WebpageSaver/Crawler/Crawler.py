@@ -198,6 +198,7 @@ class Crawler:
             page.meta.append(meta)
 
         results = dict()
+        suggested_content_type = None
         for key in ['get_favicons', 'get_media', 'get_downloadable_links', 'get_scripts']:
             if results.get(key) == None:
                 results[key] = list()
@@ -217,13 +218,25 @@ class Crawler:
                     if item.url and asset[1].url_matches(item.url):
                         found_asset = asset[1]
 
-                if self.non_request_downloads and found_asset == None and item.has_url():
+                should_download = self.non_request_downloads and found_asset == None and item.has_url()
+                if key == 'get_favicons':
+                    should_download = True
+                    suggested_content_type = 'image/x-icon'
+
+                if should_download:
                     if download_assets == False:
                         continue
 
                     try:
-                        await item.download_function(page.getAssetsDir(), str(self.i.getIndex()))
+                        _ids = self.i.getIndex()
+                        req = await item.download_function(page.getAssetsDir(), str(_ids))
+
                         logging.info(key + ': non-request download: ' + item.get_url())
+
+                        if suggested_content_type != None:
+                            req.content_type = suggested_content_type
+
+                        page.addAsset(_ids, req)
                         #print(item, found_asset)
                     except Exception as e:
                         logging.exception(e)

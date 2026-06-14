@@ -29,6 +29,8 @@
                     text-align: left !important;
                     font-family: Times !important;
                     background-color: unset !important;
+                    font-weight: normal !important;
+                    text-decoration: none !important;
                 }
             </style>
             <div id="p${class_name}">

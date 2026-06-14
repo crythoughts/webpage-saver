@@ -66,6 +66,8 @@ class Asset(BaseModel):
         await self.download_function(dir)
 
     async def download_function(self, dir, name: str = None):
+        from WebpageSaver.Crawler.Components.GotRequest import GotRequest
+
         if name == None:
             name = self.getEncodedURL()
 
@@ -73,11 +75,21 @@ class Asset(BaseModel):
             logging.info('no url...')
             return
 
+        req = GotRequest(
+            url = self.url,
+            content_type = '',
+            asset = Asset(
+                url = self.url
+            )
+        )
+
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url) as response:
                 async with aiofiles.open(str(dir.joinpath(name)), mode='wb') as f:
                     async for chunk in response.content.iter_chunked(4096):
                         await f.write(chunk)
+
+        return req
 
     def getEncodedURL(self):
         return urllib.parse.quote(self.url)

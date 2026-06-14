@@ -26,7 +26,7 @@
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
 - [ ] timeout
-- [ ] favicon downloading
+- [x] favicon downloading
 - [x] view assets from requests
 - [x] linked pages: show from all pages with this url
 

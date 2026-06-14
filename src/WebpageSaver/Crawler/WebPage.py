@@ -372,10 +372,14 @@ class WebPage(BaseModel):
 
         return d + '...'
 
-    # TODO download favicons
     def getFavicon(self):
         try:
-            return self.favicons[0].url
+            first_url = self.favicons[0].url
+            asset = self.getAssetByUrl(first_url)
+            if asset != None:
+                return '/page/asset?id={0}&path={1}'.format(self.identify, asset[0])
+                
+            return first_url
         except Exception as e:
             logging.exception(e)
             return '/static/no_asset.jpg'

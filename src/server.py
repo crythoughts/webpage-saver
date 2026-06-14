@@ -51,6 +51,7 @@ async def settings(request: web.Request):
 
         config.set('navigation_save', int(data.get('a') == 'on'))
         config.set('navigation_first_found', int(data.get('b') == 'on'))
+        config.set('remove_scripts_by_default', int(data.get('r') == 'on'))
 
     return aiohttp_jinja2.render_template('@settings.html', request, {
         'config': config
@@ -110,7 +111,14 @@ async def gpbid(request: web.Request):
 
         case 'url':
 
+            ignores_save = query.get('ignores') == 'on'
             p_url = query.get('url')
+            this_host = URL(p_url).host
+
+            if this_host != None and this_host != URL(page.url).host:
+                if config.get('navigation_another_domains', 0) == 0:
+                    ignores_save = True
+
             new_url = Asset.getDecodedURL(p_url)
             redirect_url = page.getRelativeURL(new_url)
 
@@ -125,7 +133,7 @@ async def gpbid(request: web.Request):
 
             do_nav_save = True
             # Automatically saving page
-            if config.get('navigation_save') == 1:
+            if ignores_save == False and config.get('navigation_save') == 1:
                 if len(candidates_to_redirect) > 0:
                     if config.get('navigation_save_ignore_found', 0) == 1:
                         logging.info('found {0} candidates to redirect, but we will ignore them'.format(len(candidates_to_redirect)))
@@ -275,7 +283,7 @@ async def gpbid(request: web.Request):
             html = PageHTML.from_html(text)
 
             html.clear(page,
-                clear_js = query.get('remove_scripts', config.get('remove_scripts_by_default', True)) == 'on',
+                clear_js = query.get('remove_scripts', config.get('remove_scripts_by_default', 1)) == 1,
                 remove_integrity = query.get('remove_integrity') == 'on',
                 remove_inline_css = query.get('remove_inline_css') == 'on',
                 remove_styles = query.get('remove_styles') == 'on',
