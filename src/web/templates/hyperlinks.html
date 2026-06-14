@@ -2,10 +2,29 @@
 
 {% block body %}
 
-{% for i in urls %}
-    <div class="pl-5 pt-1 pr-5 border-b-solid border-b-white border-b-1">
-        <a href="/page/{{page.identify}}?mode=url&url={{i.value}}">{{i.label[0:150]}}</a>
-    </div>
-{% endfor %}
+<div class="bg-violet-200 p-5 w-full">
+    <table class="w-full">
+        <thead>
+            <tr>
+                <td>URL</td>
+                <td>Label</td>
+                <td class="w-20">Classes</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in urls %}
+
+            <tr>
+                <td>
+                    <a href="/page/{{page.identify}}?mode=url&url={{i.value}}">{{i.value}}</a>
+                </td>
+                <td>{{i.getShortLabel()}}</td>
+                <td>{{', '.join(list(i.class))}}</td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 {% endblock %}

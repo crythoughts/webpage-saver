@@ -134,6 +134,8 @@ class PageHTML:
                                 url.set_url(attr)
                     elif key == 'download':
                         url.is_download = True
+                    else:
+                        setattr(url, key, attr)
                 except Exception as e:
                     logging.exception(e)
                     continue
@@ -146,10 +148,11 @@ class PageHTML:
             item.set_node(tag)
 
             src = tag.get('src')
+            if src == None or len(src) == 0:
+                src = tag.get(orig_page.getOrigAttr())
 
             try:
-                if len(src) > 0:
-                    item.set_url(orig_page.getRelativeURL(tag.get('src')))
+                    item.set_url(orig_page.getRelativeURL(src))
             except:
                 pass
 

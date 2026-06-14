@@ -8,15 +8,32 @@
     </div>
 
     <div id="page-main" class="grid grid-cols-[1fr_0fr] gap-5 pb-5">
-        <div class="relative">
-            <div id="screenshot">
+        <div>
+            <div class="relative" id="screenshot">
                 <a href="/page/screenshot?id={{page.identify}}&file=viewport.jpeg">
                     <img class="w-full" src="{{page.getScreenshotURL()}}">
                 </a>
                 
-                <div class="rounded-tl-sm absolute bottom-0 right-0 p-2 opacity-50 bg-black">
+                <div class="rounded-tl-sm absolute bottom-0 right-0 pt-1 pb-1 pr-2 pl-2 opacity-50 bg-black hover:opacity-100">
                     <a class="text-white" href="{{page.getScreenshotURL('fullscreen.jpeg')}}">Fullscreen</a>
                 </div>
+            </div>
+            <div class="h-15 w-full flex justify-center items-center gap-2">
+                <a class="opacity-20 hover:opacity-50" title="Text only" href="/page/{{page.identify}}?mode=text">
+                    <img class="w-10 h-10" src="/static/view1.png">
+                </a>
+                <a class="opacity-20 hover:opacity-50" title="Media" href="/page/{{page.identify}}?mode=media">
+                    <img class="w-10 h-10" src="/static/view2.png">
+                </a>
+                <a class="opacity-20 hover:opacity-50" title="Metatags" href="/page/{{page.identify}}?mode=metatags">
+                    <img class="w-10 h-10" src="/static/view3.png">
+                </a>
+                <a class="opacity-20 hover:opacity-50" title="Hyperlinks" href="/page/{{page.identify}}?mode=hyperlinks">
+                    <img class="w-10 h-10" src="/static/view4.png">
+                </a>
+                <a class="opacity-20 hover:opacity-50" title="View with options" href="/page/{{page.identify}}?mode=page_options">
+                    <img class="w-10 h-10" src="/static/view5.png">
+                </a>
             </div>
         </div>
         <div class="w-50">

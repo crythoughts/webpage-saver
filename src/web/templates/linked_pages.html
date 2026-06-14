@@ -4,16 +4,16 @@
 
 <div class="p-5 pl-10 pr-10 pb-10">
     <div class="pb-5">
-        <b class="text-2xl">{{page.title}}</b>
+        <b class="text-2xl">{{page.title}} is connected to...</b>
     </div>
 
-    <div class="pt-5">
+    <div class="pt-5 flex flex-wrap">
         {% for item in linked %}
-            <a title="{{item.url}}" href="/page/{{item.identify}}?mode=meta" class="hover:bg-slate-100 p-2 h-30 w-30 inline-block">
+            <a title="{{item.url}}" href="/page/{{item.identify}}?mode=meta" class="hover:bg-slate-100 p-5 h-50 w-50 inline-block">
                 <img class="w-full" src="{{item.getScreenshotURL()}}">
 
                 <div>
-                    <b>{{item.getShortTitle()}}</b>
+                    <b>{{item.getShortTitle(60)}}</b>
                 </div>
             </a>
         {% endfor %}

@@ -168,6 +168,7 @@ async def gpbid(request: web.Request):
                 'metatags': page.meta,
                 'links': html.get_links(page),
                 'scripts': html.get_scripts(page),
+                'str': str,
                 'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
@@ -211,6 +212,7 @@ async def gpbid(request: web.Request):
             return aiohttp_jinja2.render_template('hyperlinks.html', request, {
                 'urls': html.get_urls(page, keep_original_urls = rel == 'off'),
                 'page': page,
+                'list': list,
                 'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
@@ -661,7 +663,7 @@ def swjs(request: web.Request):
         config.cwd.joinpath('web').joinpath('static').joinpath('sw-replace.js'),
         headers = {
             'Service-Worker-Allowed': '/',
-            'Cache-Control': 'no-cache',
+            #'Cache-Control': 'no-cache',
         }
     )
 

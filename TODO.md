@@ -11,10 +11,6 @@
 - [x] forms submit
 - [x] css url('') replacer
 
-**page info**
-
-- [ ] tag stats
-
 **downloader**
 
 - [x] make screenshots
@@ -29,9 +25,10 @@
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
-- [ ] brotli support
 - [ ] timeout
 - [ ] favicon downloading
+- [ ] view assets from requests
+- [ ] linked pages: show from all pages with this url
 
 **webdrivers**
 
@@ -42,3 +39,8 @@
 **cache**
 
 - [x] save url without http / https differences
+
+**maybe not**
+
+- [ ] brotli support
+- [ ] tag stats

@@ -6,20 +6,20 @@
     <div>
         <b>Metatags</b>
 
-        <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+        <table class="bg-violet-200 p-5 border-separate border-spacing-5">
             <thead>
                 <tr>
-                    <td>name</td>
+                    <td class="w-30">name</td>
                     <td>content</td>
-                    <td>property</td>
+                    <td class="w-30">property</td>
                 </tr>
             </thead>
             <tbody>
                 {% for i in metatags %}
                 <tr>
-                    <td>{{i.name}}</td>
+                    <td>{{i.name or ''}}</td>
                     <td>{{i.content}}</td>
-                    <td>{{i.property}}</td>
+                    <td>{{i.property or ''}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -27,7 +27,7 @@
     </div>
 
     <div>
-        <b>Links</b>
+        <b>"link"s</b>
 
         <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
             <thead>
@@ -40,7 +40,7 @@
             <tbody>
                 {% for i in links %}
                 <tr>
-                    <td>{{i.rel}}</td>
+                    <td>{{', '.join(i.rel or '')}}</td>
                     <td>{{i.url}}</td>
                     <td>{{i.type}}</td>
                 </tr>
@@ -52,16 +52,24 @@
     <div>
         <b>Scripts</b>
 
-        <table class="bg-violet-200 p-5 border-separate border-spacing-x-5">
+        <table class="w-full bg-violet-200 p-5 border-separate border-spacing-x-5">
             <thead>
                 <tr>
-                    <td>URL</td>
+                    <td>URL or text</td>
                 </tr>
             </thead>
             <tbody>
                 {% for i in scripts %}
                 <tr>
+                    {% if i.url != None %}
                     <td>{{i.url}}</td>
+                    {% else %}
+                    <td>
+                        <textarea class="min-h-50 w-full bg-white pl-2 pr-2 pt-2">
+                            {{str(i.bs_node.decode_contents())}}
+                        </textarea>
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

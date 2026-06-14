@@ -17,9 +17,10 @@
                     box-shadow: 0px 0px 10px 0px rgba(34, 60, 80, 0.3);
                     box-sizing: border-box;
                     padding: 5px;
-                    width: 100px;
-                    height: 100px;
+                    width: 80px;
+                    height: 60px;
                     z-index: 9999999;
+                    box-shadow: 0px 0px 50px 0px rgba(34, 60, 80, 0.3);
                 }
             </style>
             <div id="p${class_name}">
