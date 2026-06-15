@@ -150,6 +150,9 @@ class WebPage(BaseModel):
         return self.getDir().joinpath(self.data_file)
 
     def getAssetsDir(self) -> Path:
+        if self.common_page_id != None:
+            return self.root_directory.joinpath(self.common_page_id).joinpath(self.assets_directory)
+
         return self.getDir().joinpath(self.assets_directory)
 
     def getThumbsDir(self) -> Path:
@@ -244,7 +247,7 @@ class WebPage(BaseModel):
     def addAsset(self, ident: int, request: GotRequest):
         self.assets_links[ident] = request
 
-    def getRelativeURL(self, url: str, ignore_host_errors: bool = False):
+    def getRelativeURL(self, url: str, ignore_host_errors: bool = False, ruofc: bool = True):
         relative_url = str(self.relative_url)
         if url == None:
             return relative_url
@@ -255,19 +258,25 @@ class WebPage(BaseModel):
         if not url.startswith('http') and url.startswith('data:') == True:
             return url
 
-        # May be a subdomain or full link
-        if url.startswith(relative_url) == False and url.startswith('http') == False and url[0] != '/':
-            if i.suffix != None and i.suffix != '':
-                return Asset.getDecodedURL(URL(self.url.replace('/' + i.name, '')).joinpath(url).human_repr())
-
-            return Asset.getDecodedURL(URL(self.url).joinpath(url).human_repr())
-
         # Relative urls. WORKAROUND
         if url.startswith('..'):
             return URL(self.url).joinpath(url).human_repr()
 
         if relative_url[-1] == '/':
             relative_url = relative_url[:-1]
+
+        # Relative link
+        if url.startswith(relative_url) == False and url.startswith('http') == False and url[0] != '/':
+            if ruofc == True:
+                if i.suffix != None and i.suffix != '':
+                    return Asset.getDecodedURL(URL(self.url.replace('/' + i.name, '')).joinpath(url).human_repr())
+
+                return Asset.getDecodedURL(URL(self.url).joinpath(url).human_repr())
+            else:
+                if url[0] == '/':
+                    return relative_url + url
+                else:
+                    return relative_url + '/' + url
 
         if u1.host == None:
             if url == None or len(url) == 0:
@@ -283,6 +292,9 @@ class WebPage(BaseModel):
             return url
 
         if len(url) > 0:
+            if u1.host in relative_url:
+                return url
+
             if url[0] == '/':
                 return relative_url + url
             else:

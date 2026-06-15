@@ -19,6 +19,11 @@ class Crawler:
     page_load_timeout_s: int = 10
     sleep_before_crawl_s: float = 0
     make_screenshots: bool = True
+    ignore_other_assets: bool = False
+
+    ignore_assets_no_length: bool = False
+    max_asset_size_bytes: int = 3000000
+    asset_download_timeout: float = 15
 
     async def register(self, page: WebPage, webdriver_page):
         self.i = Increment()
@@ -35,7 +40,7 @@ class Crawler:
                     is_first_ever = True
                     #return
 
-                logging.info('{0} asset'.format(request.url))
+                logging.info('{0} request'.format(request.url))
 
                 webdriver_page.appendRequest(GotRequest(
                     url = request.url,
@@ -48,7 +53,15 @@ class Crawler:
             except Exception as e:
                 logging.exception(e)
 
-        async def _response(response):
+        async def _download(response):
+            if self.ignore_other_assets == True:
+                logging.info('skipping asset')
+
+            headers = response.headers
+            content_length = headers.get('content-length')
+
+            avoid = False
+
             __request = None
             for item in webdriver_page.got_assets:
                 if item[1].url_matches(response.url):
@@ -57,9 +70,18 @@ class Crawler:
             if __request == None:
                 return
 
+            if content_length == None or content_length == '0':
+                if self.ignore_assets_no_length == True:
+                    avoid = True
+
+            if content_length != None:
+                if int(content_length) > self.max_asset_size_bytes:
+                    if self.max_asset_size_bytes > 0:
+                        avoid = True
+
             __request.response = response
 
-            logging.info('request {0}, method {1}'.format(response.url, __request.request.method))
+            logging.info('{1} {0}'.format(response.url, __request.request.method))
 
             if __request.common_to_iframe:
                 logging.info('request is common to its iframe')
@@ -74,9 +96,22 @@ class Crawler:
 
                 __request.done = True
 
-            if __request.done == False and __request.is_first_ever == False and __request.request.method == 'GET':
+            _url = response.url
+            _i = self.i.getIndex()
+
+            if avoid == True:
+                __request.asset = Asset(url=response.url)
+
+                if __request._frame:
+                    __request._frame.addAsset(_i, __request)
+                    page.addAsset(_i, __request)
+                else:
+                    page.addAsset(_i, __request)
+
+                logging.info('{0}: avoiding for some reason'.format(response.url))
+
+            if avoid == False and __request.done == False and __request.is_first_ever == False and __request.request.method == 'GET':
                 try:
-                    _url = response.url
                     if __request.request.redirected_from:
                         logging.info('assets: redirected to {0}'.format(_url))
                         _url_r = __request.request.redirected_from.url
@@ -86,25 +121,26 @@ class Crawler:
 
                     __request.asset = Asset(url=_url)
                     __request.status = response.status
-                    _i = self.i.getIndex()
+
                     #_dir = _orig_dir.joinpath(request.asset.getEncodedURL())
+                    #page.assets_links[request.asset.getEncodedURL()] = _i
+
+                    __request.content_type = headers.get('content-type')
+                    _orig_dir = page.getAssetsDir()
 
                     if __request._frame:
                         __request._frame.addAsset(_i, __request)
                         page.addAsset(_i, __request)
                     else:
                         page.addAsset(_i, __request)
-                    #page.assets_links[request.asset.getEncodedURL()] = _i
-
-                    headers = response.headers
-                    __request.content_type = headers.get('content-type')
-                    _orig_dir = page.getAssetsDir()
 
                     if __request._frame != None:
                         _w = webdriver_page.getFramePageByURL(__request._frame.url)
 
                         if _w != None:
-                            _orig_dir = _w.getAssetsDir()
+                            # Everything will be downloaded inside main page folder bc of possible mess
+                            #_orig_dir = _w.getAssetsDir()
+                            pass
                         else:
                             logging.error('something wrong with iframe')
 
@@ -121,6 +157,15 @@ class Crawler:
 
             __request.ended_at = datetime.now().timestamp()
             __request.done = True
+
+        async def _response(response):
+            try:
+                await asyncio.wait_for(_download(response), timeout=self.asset_download_timeout)
+
+            except asyncio.TimeoutError:
+                logging.info(f"Timeout processing request")
+            except Exception as e:
+                logging.exception(e)
 
         webdriver_page._page.on('request', _request)
         webdriver_page._page.on('response', _response)
@@ -171,6 +216,7 @@ class Crawler:
         try:
             await webdriver_page._page.wait_for_event('domcontentloaded', timeout = self.page_load_timeout_s * 1000)
         except Exception as e:
+            self.ignore_other_assets = True
             logging.exception(e)
 
         if self.make_screenshots:

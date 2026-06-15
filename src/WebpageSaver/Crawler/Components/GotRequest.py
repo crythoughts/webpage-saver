@@ -48,8 +48,8 @@ class GotRequest(BaseModel):
 
         #        return True
 
-        # print(page.getRelativeURL(self.asset.url), '\n', page.getRelativeURL(url), '\n')
-        if URL(page.getRelativeURL(self.asset.url)) == URL(page.getRelativeURL(url)):
+        #print(URL(page.getRelativeURL(self.asset.url, ruofc = False)), URL(page.getRelativeURL(url, ruofc = False)))
+        if URL(page.getRelativeURL(self.asset.url, ruofc = False)) == URL(page.getRelativeURL(url, ruofc = False)):
             return True
 
         if URL(self.asset.url) == URL(url):

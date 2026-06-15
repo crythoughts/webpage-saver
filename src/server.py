@@ -266,6 +266,7 @@ async def gpbid(request: web.Request):
                 query['remove_iframes'] = 'on'
                 query['remove_meta'] = 'on'
                 query['remove_selectors'] = 'nav, header, input, button'
+                #query['remove_tables'] = 'on'
 
             if page.redirected_to != None:
                 redir = page.getRedirection()
@@ -293,7 +294,8 @@ async def gpbid(request: web.Request):
                 remove_funcs = query.get('remove_funcs', 'on') == 'on',
                 catch_clicks = query.get('catch_clicks', 'on') == 'on',
                 relay_sw = query.get('relay_sw') != 'on',
-                original_links = query.get('original_links') != 'on'
+                original_links = query.get('original_links') != 'on',
+                remove_tables = query.get('remove_tables') == 'on'
             )
 
             try:
@@ -330,14 +332,13 @@ async def gpbid(request: web.Request):
 async def gpa(request: web.Request):
     query = request.rel_url.query
 
-    asset_url = request.match_info.get('path', None)
     page_id = request.match_info.get('identify', None)
-
-    if asset_url == None:
-        asset_url = query.get('asset_url', None)
+    asset_url = request.match_info.get('path', None)
 
     if page_id == None:
         page_id = query.get('id')
+    if asset_url == None:
+        asset_url = query.get('asset_url', None)
 
     if asset_url != None:
         query_string = URL(request.url).query_string or ''
@@ -357,10 +358,18 @@ async def gpa(request: web.Request):
     req = None
 
     if asset_url != None:
-        param_name = 'internal_content_type_param_and_i_hope_noone_will_use_this_in_real_cases'
+        param_name = 'content_type'
         asset_url = URL(urllib.parse.unquote(asset_url))
         query_dict = dict(asset_url.query)
-        query_dict.pop(param_name, None)
+
+        if query.get(param_name) != None:
+            query_dict.pop(param_name, None)
+
+        if query.get('asset_url') != None:
+            query_dict.pop('asset_url', None)
+
+        if query.get('id') != None:
+            query_dict.pop('id', None)
 
         _ = page.getAssetByUrl(str(asset_url.with_query(query_dict)), query.get(param_name))
 
@@ -626,11 +635,18 @@ async def sp(request: web.Request):
             raise web.HTTPNotFound(body = 'Not found page to link')
 
     try:
+        ignore_no_length = str(inputs.get('ignore_no_length', 0)) == '1'
+        max_asset_size_mb = None
+        if inputs.get('max_asset_size_mb') != None:
+            max_asset_size_mb = float(inputs.get('max_asset_size_mb'))
+
         payload = await api.savePage(url = url, 
                                      link_pages = ps, 
                                      webdriver_id = inputs.get('webdriver'),
                                      scroll_down = str(inputs.get('scroll_down', 1)) == '1',
                                      scroll_times = int(inputs.get('scroll_times', 5)),
+                                     ignore_assets_no_length = ignore_no_length,
+                                     max_asset_size_mb = max_asset_size_mb
                                      )
     except Exception as e:
         logging.exception(e)

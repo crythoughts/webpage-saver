@@ -94,19 +94,27 @@ self.addEventListener('fetch', async event => {
             const v = v0.pathname;
             const v1 = v.split('/');
             const v2 = v1[v1.length - 1]
+            const iids = u.pathname.split('/');
 
             nu = new URL(v0.origin + '/page/asset')
-            //console.log(u.origin, ref.origin)
             if (u.origin == ref.origin) {
                 //console.log(page_id, u.pathname)
                 nu = new URL(v0.origin + '/page/asset/' + page_id)
-                nu.pathname += u.pathname + (u.search ?? '')
+
+                // path is JUST a file name on current level and probaly not belongs to folder "Page".
+                // but browser adds the "/page" page
+                if (iids[0] == 'page' || iids[1] == 'page') {
+                    nu.pathname += '/' + iids.slice(2).join('/') + (u.search ?? '')
+                } else {
+                    nu.pathname += u.pathname + (u.search ?? '')
+                }
+                console.log(nu.pathname)
                 //nu.searchParams.set('asset_url', u.pathname);
             } else {
                 nu.searchParams.set('id', v2);
                 nu.searchParams.set('asset_url', u.href);
             }
-            nu.searchParams.set('internal_content_type_param_and_i_hope_noone_will_use_this_in_real_cases', content_type);
+            nu.searchParams.set('content_type', content_type);
 
             return fetch(String(nu), {
                 mode: 'cors',

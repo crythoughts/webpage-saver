@@ -20,7 +20,7 @@
 - [x] canvases
 - [x] 302 response
 - [x] iframes
-- [ ] styles in iframes
+- [x] styles in iframes
 - [x] shadow dom support
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
@@ -29,7 +29,7 @@
 - [x] favicon downloading
 - [x] view assets from requests
 - [x] linked pages: show from all pages with this url
-- [ ] max assets download size
+- [x] max assets download size
 
 **webdrivers**
 

@@ -65,7 +65,7 @@ class Asset(BaseModel):
     async def download(self, dir: str):
         await self.download_function(dir)
 
-    async def download_function(self, dir, name: str = None):
+    async def download_function(self, dir, name: str = None, timeout_seconds: float = 10):
         from WebpageSaver.Crawler.Components.GotRequest import GotRequest
 
         if name == None:
@@ -83,7 +83,9 @@ class Asset(BaseModel):
             )
         )
 
-        async with aiohttp.ClientSession() as session:
+        session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=timeout_seconds,sock_read=timeout_seconds)
+
+        async with aiohttp.ClientSession(timeout = session_timeout) as session:
             async with session.get(self.url) as response:
                 async with aiofiles.open(str(dir.joinpath(name)), mode='wb') as f:
                     async for chunk in response.content.iter_chunked(4096):

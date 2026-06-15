@@ -30,16 +30,28 @@ Archive page
                         <input type="checkbox" value="1" name="scroll_down" checked>
                         Scroll down
                     </label>
-                </div>
-                <div>
-                    Scroll cycles
-                    <input class="bg-white" type="number" name="scroll_times" value="5">
+                    <label>
+                        <input class="bg-white" type="number" name="scroll_times" value="5">
+                        times
+                    </label>
                 </div>
             </div>
             <div>
-                <b>Sleep time</b>
+                <b>Sleep</b>
                 <div>
                     <input class="bg-white" type="number" name="sleep_before_crawl_s" value="1">
+                </div>
+            </div>
+            <div>
+                <b>Assets</b>
+                <div>
+                    <label>
+                        <input type="checkbox" value="1" name="ignore_no_length">
+                        Do not download assets without content-length
+                    </label>
+                </div>
+                <div>
+                    <span>Do not download assets bigger than <input min="0" value="30" class="bg-white w-20" type="number" name="max_asset_size_mb"> MB</span>
                 </div>
             </div>
             <div class="text-right">

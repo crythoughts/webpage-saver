@@ -199,6 +199,11 @@ class PageHTML:
             for tag in self.bs.select(selector):
                 tag.decompose()
 
+    def remove_tables(self):
+        for tag in ['table', 'tbody', 'tr', 'td', 'thead', 'th']:
+            for i in self.bs.select(tag):
+                i.name = 'div'
+
     def clear_js(self, softly: bool = False):
         logging.info('removing all js functions from tags and script tags')
 
@@ -372,7 +377,8 @@ class PageHTML:
             remove_funcs: bool = False,
             catch_clicks: bool = False,
             relay_sw: bool = False,
-            original_links: bool = False
+            original_links: bool = False,
+            remove_tables: bool = False
               ):
         if clear_js:
             self.clear_js()
@@ -392,6 +398,8 @@ class PageHTML:
             self.add_nav_remove_script()
         if catch_clicks:
             self.add_catch_events(page)
+        if remove_tables:
+            self.remove_tables()
 
     @classmethod
     def from_html(cls, html: str):
