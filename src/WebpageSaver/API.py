@@ -65,12 +65,15 @@ class API:
                        scroll_down: bool = True,
                        scroll_times: int = 5,
                        sleep_before_crawl_s: float = 1,
+                       page_load_timeout_s: float = 10,
                        conv: bool = True):
         crawler = Crawler()
 
         try:
             if sleep_before_crawl_s != None:
                 crawler.sleep_before_crawl_s = sleep_before_crawl_s
+            if page_load_timeout_s != None:
+                crawler.page_load_timeout_s = page_load_timeout_s
         except Exception as e:
             logging.exception(e)
 

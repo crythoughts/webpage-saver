@@ -1,5 +1,5 @@
 from pydantic import Field, BaseModel, computed_field
-from typing import Any
+from typing import Any, Literal
 from WebpageSaver import config
 from playwright.async_api import Playwright, async_playwright
 from WebpageSaver.Crawler.Components.UserAgent import UserAgent
@@ -19,9 +19,12 @@ class Webdriver(BaseModel):
     platform: str = Field(default = 'win64')
     orig_url: str = Field(default = None)
     shell_path: str = Field()
-    webdriver_type: str = Field(default = 'chromedriver')
+    webdriver_type: Literal['chromedriver', 'cdp'] | str = Field(default = 'chromedriver')
     user_data_dir: str = Field(default = None)
     user_agent: str = Field(default = None)
+    args: list = Field(default = [])
+
+    cdp_endpoint: str = Field(default = 'http://localhost:9222')
 
     async def start(self):
         if self.is_running == True:
@@ -61,8 +64,13 @@ class Webdriver(BaseModel):
         if self.user_data_dir != None:
             args.append('--user_data=' + self.user_data_dir)
 
-        #for argument in i.get('webdriver.args'):
-        #    args.append(argument)
+        if self.args != None:
+            for i in self.args:
+                args.append(i)
+
+        if self.webdriver_type == 'cdp':
+            #args.append('--remote-debugging-port=9222')
+            return await self._playwright.chromium.connect_over_cdp(self.cdp_endpoint)
 
         return await self._playwright.chromium.launch(
             executable_path = self.getHeadlessShell(),
@@ -110,15 +118,17 @@ class Webdriver(BaseModel):
 
         self._playwright = None
 
-    async def openPage(self, page: WebPage):
+    async def openPage(self, page: WebPage, attach_shadow_dom_unlocker: bool = False):
         new_page = WebdriverPage()
         new_page._page = await self._context.new_page()
-        '''new_page._page.add_init_script("""
-            Element.prototype._attachShadow = Element.prototype.attachShadow;
-            Element.prototype.attachShadow = function(init) {
-                return this._attachShadow({...init, mode: 'open'});
-            };
-        """)'''
+
+        if attach_shadow_dom_unlocker == True:
+            new_page._page.add_init_script("""
+                Element.prototype._attachShadow = Element.prototype.attachShadow;
+                Element.prototype.attachShadow = function(init) {
+                    return this._attachShadow({...init, mode: 'open'});
+                };
+            """)
 
         logging.info('opened page {0}'.format(page.url))
         #await page.setViewport(self.viewport)

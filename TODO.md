@@ -25,16 +25,22 @@
 - [x] urls with `../`
 - [x] do not scroll up (when taking first screenshot) if there is fragment in url
 - [x] do not add useless spaces
-- [ ] timeout
+- [x] timeout
 - [x] favicon downloading
 - [x] view assets from requests
 - [x] linked pages: show from all pages with this url
+- [ ] max assets download size
 
 **webdrivers**
 
 - [x] webdriver downloader
 - [x] webdriver select
 - [ ] webdriver deletion
+
+**other**
+
+- [ ] docs
+- [ ] api
 
 **cache**
 

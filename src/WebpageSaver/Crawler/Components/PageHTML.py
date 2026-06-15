@@ -83,7 +83,7 @@ class PageHTML:
             item.set_node(tag)
 
             url = tag.get('href')
-            if len(tag.get('href')) == 0:
+            if len(tag.get('href', '')) == 0:
                 url = tag.get(orig_page.getOrigAttr())
             item.set_url(orig_page.getRelativeURL(url))
 

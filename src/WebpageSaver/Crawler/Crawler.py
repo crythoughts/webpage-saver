@@ -16,7 +16,7 @@ import aiofiles
 class Crawler:
     non_request_downloads: bool = False
     optional_sleep_s: float = 0
-    page_load_timeout_s: int = 5
+    page_load_timeout_s: int = 10
     sleep_before_crawl_s: float = 0
     make_screenshots: bool = True
 

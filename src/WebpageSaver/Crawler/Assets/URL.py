@@ -35,7 +35,7 @@ class URL(Asset):
 
     def getShortLabel(self, count: int = 100):
         title = self.label
-        print(self.label, len(self.label))
+        #print(self.label, len(self.label))
         if self.label == None or len(self.label) == 0:
             title = 'No label'
 

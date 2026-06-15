@@ -13,7 +13,7 @@
         <a href="{{url}}">
             <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Open">
         </a>
-        <a href="javascript:save_page_link()">
+        <a onclick="save_page_link(event)">
             <input class="cursor-pointer bg-white pt-2 pb-2 pr-5 pl-5" type="button" value="Save">
         </a>
         <div class="flex flex-col gap-1">
@@ -46,7 +46,8 @@
 </div>
 
 <script>
-    async function save_page_link() {
+    async function save_page_link(event) {
+        event.target.setAttribute('style', 'pointer-events:none;opacity:0.5')
         await save_submit("{{url}}", "{{id}}")
     }
 </script>

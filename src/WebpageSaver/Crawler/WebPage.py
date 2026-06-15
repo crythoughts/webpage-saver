@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Generator
 from datetime import datetime
 from pathlib import Path
+from WebpageSaver.Crawler.Assets.Asset import Asset
 from WebpageSaver.Crawler.Assets.Meta import Meta
 from WebpageSaver.Crawler.Assets.Favicon import Favicon
 from WebpageSaver.Crawler.Components.GotRequest import GotRequest
@@ -249,13 +250,17 @@ class WebPage(BaseModel):
             return relative_url
 
         u1 = URL(url)
+        i = URL(self.url)
 
         if not url.startswith('http') and url.startswith('data:') == True:
             return url
 
         # May be a subdomain or full link
-        if url.startswith(relative_url) or url.startswith('http'):
-            return url
+        if url.startswith(relative_url) == False and url.startswith('http') == False and url[0] != '/':
+            if i.suffix != None and i.suffix != '':
+                return Asset.getDecodedURL(URL(self.url.replace('/' + i.name, '')).joinpath(url).human_repr())
+
+            return Asset.getDecodedURL(URL(self.url).joinpath(url).human_repr())
 
         # Relative urls. WORKAROUND
         if url.startswith('..'):

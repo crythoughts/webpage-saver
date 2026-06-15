@@ -85,9 +85,10 @@ async def gpbid(request: web.Request):
     errors_descriptions = {
         'encoding': 'Decoding error occured. Try to choose another encoding (or choose utf-8).'
     }
+    # мдаааааа
     encoding = page.encoding
-    if query.get('encoding') != None:
-        encoding = query.get('encoding')
+    if query.get('encoding', 'utf-8') != None:
+        encoding = query.get('encoding', 'utf-8')
 
     match (mode):
         case 'page_options':
@@ -329,9 +330,14 @@ async def gpbid(request: web.Request):
 async def gpa(request: web.Request):
     query = request.rel_url.query
 
-    #asset_url = query.get('asset_url', None)
     asset_url = request.match_info.get('path', None)
-    page_id = query.get('id')
+    page_id = request.match_info.get('identify', None)
+
+    if asset_url == None:
+        asset_url = query.get('asset_url', None)
+
+    if page_id == None:
+        page_id = query.get('id')
 
     if asset_url != None:
         query_string = URL(request.url).query_string or ''
@@ -339,7 +345,7 @@ async def gpa(request: web.Request):
         if len(query_string) > 0:
             asset_url = asset_url + '?' + query_string
 
-        page_id = int(request.match_info.get('identify'))
+        page_id = int(page_id)
 
     path_id = query.get('path', '')
 
@@ -623,8 +629,8 @@ async def sp(request: web.Request):
         payload = await api.savePage(url = url, 
                                      link_pages = ps, 
                                      webdriver_id = inputs.get('webdriver'),
-                                     scroll_down = str(inputs.get('scroll_down')) == '1',
-                                     scroll_times = int(inputs.get('scroll_times')),
+                                     scroll_down = str(inputs.get('scroll_down', 1)) == '1',
+                                     scroll_times = int(inputs.get('scroll_times', 5)),
                                      )
     except Exception as e:
         logging.exception(e)

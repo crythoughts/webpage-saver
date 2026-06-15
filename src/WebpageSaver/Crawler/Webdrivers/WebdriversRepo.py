@@ -37,7 +37,7 @@ class WebdriversRepo:
 
     def getById(self, ids: int = None):
         try:
-            return self._list[ids]
+            return self._list[int(ids)]
         except:
             return self.getDefault()
 
