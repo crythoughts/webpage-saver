@@ -58,7 +58,7 @@ function editPage(page_id, event) {
     event.target.parentNode.insertAdjacentHTML('beforeend', `
         <div>
             <b>New date</b>
-            <input type="text" value="${event.target.dataset.taken}" class="bg-white" id="page_new_date">
+            <input type="text" value="${event.target.dataset.taken}" class="p-2 bg-white" id="page_new_date">
         </div>
         <input type="button" class="bg-white" id="save_btn" value="Save">
     `)

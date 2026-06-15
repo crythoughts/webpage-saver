@@ -1,5 +1,9 @@
 {% extends '@layout.html' %}
 
+{% block title %}
+Media: {{page.title}}
+{% endblock %}
+
 {% block body %}
 
 <div class="p-5">
@@ -52,10 +56,10 @@
         {% else %}
             <div class="h-100 max-h-100 flex items-center justify-center m-5">
                 <a href="" class="h-full min-w-10 min-h-10">
-                    <img id="photo_media_page" class="h-full w-auto" src="" alt="">
+                    <img id="photo_media_page" class="object-contain h-full w-auto" src="" alt="">
                 </a>
             </div>
-            <div id="photos_slider" class="flex overflow-x-auto overflow-y-hidden max-w-full gap-1 w-[calc(100vw-200px)]">
+            <div id="photos_slider" class="flex overflow-x-auto overflow-y-hidden max-w-full gap-1 md:w-[calc(100vw-200px)]">
                 {% for i in media %}
                     <div onclick="openPhoto(photo_media_page, event)" class="cursor-pointer shrink-0 w-20 h-20 bg-gray-400 flex items-center justify-center">
                         <img loading="lazy" class="object-contain" src="{{i.local_url or '/static/no_asset.jpg'}}" data-url="{{i.url}}" title="{{i.alt}}" alt="{{i.alt}}">

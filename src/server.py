@@ -156,6 +156,7 @@ async def gpbid(request: web.Request):
             return aiohttp_jinja2.render_template('url.html', request, {
                 'url': redirect_url,
                 'id': page.identify,
+                'page': page,
                 'back_btn': '/page/' + page_id,
                 'possible_pages': candidates_to_redirect,
                 'possible_pages_count': len(candidates_to_redirect)
@@ -165,6 +166,7 @@ async def gpbid(request: web.Request):
 
             return aiohttp_jinja2.render_template('all_assets.html', request, {
                 'assets': page.getAssets(),
+                'page': page,
                 'back_btn': '/page/' + page_id + '?mode=meta'
             })
 
@@ -177,6 +179,7 @@ async def gpbid(request: web.Request):
                 'metatags': page.meta,
                 'links': html.get_links(page),
                 'scripts': html.get_scripts(page),
+                'page': page,
                 'str': str,
                 'back_btn': '/page/' + page_id + '?mode=meta'
             })
@@ -207,6 +210,7 @@ async def gpbid(request: web.Request):
             return aiohttp_jinja2.render_template('media.html', request, {
                 'media': medias,
                 'mmode': mmode,
+                'page': page,
                 'mmodes': {'': 'Type', 'all': 'All', 'img': 'Images', 'video': 'Videos'},
                 'back_btn': '/page/' + page_id + '?mode=meta',
                 'show_from_html': query.get('show_from_html')
@@ -253,6 +257,7 @@ async def gpbid(request: web.Request):
 
             return aiohttp_jinja2.render_template('stats.html', request, {
                 'back_btn': '/page/' + page_id + '?mode=meta',
+                'page': page,
                 'stats': html.getStats(),
             })
 

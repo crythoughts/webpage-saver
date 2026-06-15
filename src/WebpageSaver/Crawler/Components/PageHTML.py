@@ -200,6 +200,7 @@ class PageHTML:
                 tag.decompose()
 
     def remove_tables(self):
+        # Tables may be used for positioning, so there is no way to detect real table
         for tag in ['table', 'tbody', 'tr', 'td', 'thead', 'th']:
             for i in self.bs.select(tag):
                 i.name = 'div'

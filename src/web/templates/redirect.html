@@ -1,5 +1,9 @@
 {% extends '@layout.html' %}
 
+{% block title %}
+Status {{page.status}}
+{% endblock %}
+
 {% block body %}
     <div class="p-5">
         <b>{{page.status}}</b>

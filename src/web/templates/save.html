@@ -9,7 +9,7 @@ Archive page
     <div>
         <b class="text-xl">Archive page</b>
     </div>
-    <div class="pt-5 grid grid-cols-[1fr_0fr] gap-5 pl-15">
+    <div class="pt-5 grid grid-rows-[1fr_0fr] md:grid-cols-[1fr_0fr] gap-5 pl-15">
         <form class="pr-20" id="main_save_form">
             <div>
                 <b>URL</b>
@@ -58,7 +58,7 @@ Archive page
                 <input onclick="save_ws(document.querySelector('#url').value)" id="save" class="mt-5 w-20 cursor-pointer pt-2 pb-2 pr-3 pl-3 rounded bg-slate-300" type="button" value="Archive">
             </div>
         </form>
-        <div class="w-50 h-full flex flex-col" id="itms"></div>
+        <div class="w-full md:w-50 h-full flex flex-col" id="itms"></div>
     </div>
 
 </div>

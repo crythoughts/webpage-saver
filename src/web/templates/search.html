@@ -1,5 +1,9 @@
 {% extends '@layout.html' %}
 
+{% block title %}
+Found {{count}} items ({{search_type}})
+{% endblock %}
+
 {% block body %}
     <div class="hidden">
     {{search_type}}
@@ -29,6 +33,7 @@
                         <b>{{url[0:1000]}}</b>
                     </div>
                     <div>
+                        <div>
                         {% if selected_day == None or selected_month == None or True %}
                             {% if display_mode == 'calendar' %}
                                 <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=mini">As list</a>
@@ -36,6 +41,7 @@
                                 <a href="?q={{quote(current_url.query.get('q'))}}&display_mode=calendar">As calendar</a>
                             {% endif %}
                         {% endif %}
+                        </div>
 
                         <span class="text-xl">
                             {% if selected_day %}
@@ -72,16 +78,16 @@
                         {% if selected_day %}
                             <span>{{i.getReadableTaken(with_day = False)}}</span>
                         {% endif %}
-                        {% if selected_day %}
+                        {% if selected_day == None %}
                             <span>{{i.getReadableTaken()}}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
                 </div>
 
-                <div class="w-50">
+                <div class="w-50 hidden md:block">
                     {% if count > 0 %}
-                    <div class="sticky top-10 wrap-anywhere flex flex-col gap-5">
+                    <div class="sticky -mt-[70px] top-0 md:top-10 wrap-anywhere flex flex-col gap-5">
                         <a id="page_id">
                             <img src="/static/not_selected.jpg" class="h-30 object-contain" id="hover_img">
                         </a>
@@ -126,7 +132,7 @@
                 {% endfor %}
             </div>
             {% if year %}
-                <div id="months" class="grid grid-cols-[1fr_1fr_1fr] gap-5">
+                <div id="months" class="grid grid-cols-[1fr_1fr] md:grid-cols-[1fr_1fr_1fr] gap-2 md:gap-5">
                     {% for id, month in items.get('years').get(year).get('months').items() %}
                         <div class="month">
                             <div class="{% if month.get('total_records') > 0 %}has-records{% endif %}">

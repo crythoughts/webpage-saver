@@ -1,5 +1,9 @@
 {% extends '@layout.html' %}
 
+{% block title %}
+Connected pages: {{page.title}}
+{% endblock %}
+
 {% block body %}
 
 <div class="p-5 pl-10 pr-10 pb-10">
@@ -17,9 +21,9 @@
         </div>
     </div>
 
-    <div class="pt-5 flex flex-wrap">
+    <div class="pt-5 flex flex-wrap gap-5 md:gap-0">
         {% for item in linked %}
-            <a title="{{item.url}}" href="/page/{{item.identify}}?mode=meta" class="hover:bg-slate-100 p-5 h-50 w-50 inline-block">
+            <a title="{{item.url}}" href="/page/{{item.identify}}?mode=meta" class="hover:bg-slate-100 p-5 h-50 w-full md:w-50 inline-block">
                 <img class="w-full" src="{{item.getScreenshotURL()}}">
 
                 <div>

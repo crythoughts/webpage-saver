@@ -3,16 +3,16 @@
 {% block page %}
 
 <div class="w-full bg-gray-purple p-2 pr-5 pl-2 pb-4 flex justify-between">
-    <div class="flex ml-6">
+    <div class="flex ml-0 md:ml-6">
         <div class="flex items-center">
-            <a class="pr-5 text-gray-300" href="/settings">Settings</a>
+            <a class="pr-5 text-gray-300 hidden md:block" href="/settings">Settings</a>
             <a href="/">
                 <img class="block w-10 h-10" src="/static/l.png">
             </a>
         </div>
 
         <form action="/page/search" class="pl-5">
-            <input {% if append_to_header %}value="{{q}}"{% endif %} name="q" id="global_query" placeholder="Find by URL..." class="rounded pr-3 pl-3 w-70 h-full bg-stone-200" type="text" id="search_bar">
+            <input {% if append_to_header %}value="{{q}}"{% endif %} name="q" id="global_query" placeholder="Find by URL..." class="rounded pr-3 pl-3 w-50 md:w-70 h-full bg-stone-200" type="text" id="search_bar">
             <input class="h-full rounded pr-2 pl-2 pt-1 pb-1 bg-purple-400 cursor-pointer" type="submit" value="Find">
             <input class="h-full rounded pr-2 pl-2 pt-1 pb-1 bg-purple-400 cursor-pointer" type="button" value="Save" onclick="fastSaveByURL(global_query)">
 
@@ -30,8 +30,8 @@
     </div>
 </div>
 
-<div id="content" class="grid grid-cols-[0fr_1fr]">
-    <div class="w-40 pr-5">
+<div id="content" class="md:grid md:grid-cols-[0fr_1fr]">
+    <div class="w-full {% if back_btn %}pb-5{% endif %} md:pb-0 md:w-40 pr-5">
         {% if back_btn %}
             <a href="{{back_btn}}" class="font-medium flex block h-full pl-15 pt-5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="mi-solid mi-arrow-back" viewBox="0 0 24 24">
