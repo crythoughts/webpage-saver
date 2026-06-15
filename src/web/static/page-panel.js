@@ -3,7 +3,7 @@
 
     // ^ do not move ^
 
-    console.log(data)
+    //console.log(data)
     document.addEventListener('DOMContentLoaded', () => {
         const class_name = String(Date.now());
         document.querySelector('body').insertAdjacentHTML('afterbegin', `

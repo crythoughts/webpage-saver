@@ -27,13 +27,6 @@ async function downloadWebdriver() {
     }
 }
 
-async function save_ws(url, link_to) {
-    document.querySelector('#save').style.display = 'none'
-    document.querySelector('#save-win').classList.remove('hidden')
-
-    await save_submit(url, link_to)
-}
-
 function stopWebdriver(id) {
     fetch('/api/webdrivers/stop?id=' + id, {method: 'PATCH'})
 }
@@ -48,42 +41,6 @@ function delete_webdriver(id) {
     fetch('/api/webdriver?id=' + id, {method: 'DELETE'}).then(e => {
         location.reload()
     })
-}
-
-function save_submit(url, link_to = null) {
-    const f = new FormData()
-    f.append('url', url)
-    if (link_to) {
-        f.append('link_to', link_to)
-    }
-
-    const res = fetch('/api/pages/save', {
-        method: 'POST',
-        body: f
-    }).then(response  => {
-        if (!response.ok) {
-            response.text().then(e => {
-                alert(e)
-                location.reload()
-            })
-            return
-        }
-
-        response.json().then(r => {
-            window.location.assign('/page?id=' + r[0].path_to)
-        })
-
-    }).catch(err => {
-        alert(err.message)
-    })
-}
-
-function fastSaveByURL(node) {
-    const c = new URL(location.origin + '/save')
-    c.searchParams.set('preset_url', node.value)
-    c.searchParams.set('auto_run', 1)
-
-    location.assign(c.toString());
 }
 
 async function edit(page_id, new_taken) {

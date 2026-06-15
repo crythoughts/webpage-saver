@@ -8,13 +8,11 @@
         </div>
         <div class="mt-15">
             <form action="/page/search" class="flex flex-col gap-5">
-                <input class="w-80 p-2 pl-5 rounded-md bg-purple-300" placeholder="Find by URL..." type="text" name="q">
+                <input id="global_query" class="w-80 p-2 pl-5 rounded-md bg-purple-300" placeholder="Find by URL..." type="text" name="q">
 
                 <div class="flex flex-col gap-2 justify-center">
                     <input class="p-2 rounded-md bg-purple-100 cursor-pointer" type="submit" value="Find">
-                    <a href="/save">
-                        <input class="w-[100%] p-2 rounded-md bg-purple-100 cursor-pointer" type="button" value="Save">
-                    </a>
+                    <input onclick="fastSaveByURL(global_query)" class="w-[100%] p-2 rounded-md bg-purple-100 cursor-pointer" type="button" value="Save">
                 </div>
               
             </form>

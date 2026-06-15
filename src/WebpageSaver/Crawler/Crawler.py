@@ -269,6 +269,8 @@ class Crawler:
                        webdriver, 
                        link_pages: list[WebPage],
                        remove_js: bool = False,
+                       scroll_down: bool = True,
+                       scroll_times: int = 5,
                        html: str = None,
                        from_html: bool = False):
         if link_pages:
@@ -317,7 +319,7 @@ class Crawler:
         page.status = browser_page.getStatus()
 
         await browser_page.integrate(page)
-        await self.crawl(page, browser_page)
+        await self.crawl(page, browser_page, scroll_down = scroll_down, scroll_down_max_cycles = scroll_times)
 
         self._savePageToCache(page)
 

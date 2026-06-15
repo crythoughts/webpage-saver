@@ -62,9 +62,17 @@ class API:
                        webdriver_id: int = None,
                        link_pages: list[WebPage] = None,
                        remove_js: bool = False,
+                       scroll_down: bool = True,
+                       scroll_times: int = 5,
+                       sleep_before_crawl_s: float = 1,
                        conv: bool = True):
-        # TODO: w selection
         crawler = Crawler()
+
+        try:
+            if sleep_before_crawl_s != None:
+                crawler.sleep_before_crawl_s = sleep_before_crawl_s
+        except Exception as e:
+            logging.exception(e)
 
         payload = list()
         webdriver = self.w_repo.getById(webdriver_id)
@@ -75,7 +83,9 @@ class API:
         )
         page.init(config.webpages_dir)
 
-        fnl_page = await crawler.sendPage(page, webdriver, link_pages)
+        fnl_page = await crawler.sendPage(page, webdriver, link_pages, 
+                                          scroll_down = scroll_down,
+                                          scroll_times = scroll_times)
 
         if conv:
             payload.append(fnl_page.model_dump(exclude_none = True))
@@ -88,11 +98,12 @@ class API:
     async def savePageByHTML(self, url: str,
                             html: str, 
                             link_pages: list[WebPage] = None, 
+                            webdriver_id: int = None,
                             title: str = None, 
                             remove_js: bool = True):
         crawler = Crawler()
         payload = list()
-        webdriver = self.w_repo.getDefault()
+        webdriver = self.w_repo.getById(webdriver_id)
         await webdriver.start()
 
         page = WebPage(

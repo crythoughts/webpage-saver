@@ -423,7 +423,10 @@ def gpsbid(request):
 
 @routes.get('/save')
 def spw(request: web.Request):
-    return aiohttp_jinja2.render_template('save.html',request,{})
+    return aiohttp_jinja2.render_template('save.html',request,{
+        'webdrivers': api.getWebdrivers(conv = False),
+        'webdrivers_index': api.w_repo._getCurrentWebdriverIndex()
+    })
 
 @routes.get('/page/search')
 def sfp(request: web.Request):
@@ -617,7 +620,12 @@ async def sp(request: web.Request):
             raise web.HTTPNotFound(body = 'Not found page to link')
 
     try:
-        payload = await api.savePage(url = url, link_pages = ps)
+        payload = await api.savePage(url = url, 
+                                     link_pages = ps, 
+                                     webdriver_id = inputs.get('webdriver'),
+                                     scroll_down = str(inputs.get('scroll_down')) == '1',
+                                     scroll_times = int(inputs.get('scroll_times')),
+                                     )
     except Exception as e:
         logging.exception(e)
         raise web.HTTPBadRequest(body = str(e))

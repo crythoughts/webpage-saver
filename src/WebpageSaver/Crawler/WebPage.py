@@ -244,8 +244,11 @@ class WebPage(BaseModel):
         self.assets_links[ident] = request
 
     def getRelativeURL(self, url: str, ignore_host_errors: bool = False):
-        u1 = URL(url)
         relative_url = str(self.relative_url)
+        if url == None:
+            return relative_url
+
+        u1 = URL(url)
 
         if not url.startswith('http') and url.startswith('data:') == True:
             return url
