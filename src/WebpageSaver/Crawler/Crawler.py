@@ -100,7 +100,8 @@ class Crawler:
             _i = self.i.getIndex()
 
             if avoid == True:
-                __request.asset = Asset(url=response.url)
+                a = Asset(url=response.url)
+                __request.asset = a
 
                 if __request._frame:
                     __request._frame.addAsset(_i, __request)
@@ -288,7 +289,11 @@ class Crawler:
                         logging.exception(e)
 
                 try:
-                    item.moveUrlToAnotherAttr(page)
+                    if found_asset:
+                        item.moveUrlToAnotherAttr(page, ids = found_asset.internal_id)
+                    else:
+                        item.moveUrlToAnotherAttr(page)
+
                     results[key].append(item)
                 except Exception as e:
                     logging.exception(e)

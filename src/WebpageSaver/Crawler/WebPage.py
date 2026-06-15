@@ -245,6 +245,7 @@ class WebPage(BaseModel):
         return self.assets_links.get(int(id))
 
     def addAsset(self, ident: int, request: GotRequest):
+        request.asset.internal_id = ident
         self.assets_links[ident] = request
 
     def getRelativeURL(self, url: str, ignore_host_errors: bool = False, ruofc: bool = True):
@@ -264,6 +265,9 @@ class WebPage(BaseModel):
 
         if relative_url[-1] == '/':
             relative_url = relative_url[:-1]
+
+        if len(url) == 0:
+            return relative_url
 
         # Relative link
         if url.startswith(relative_url) == False and url.startswith('http') == False and url[0] != '/':

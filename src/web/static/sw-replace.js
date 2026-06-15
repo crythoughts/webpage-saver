@@ -108,7 +108,7 @@ self.addEventListener('fetch', async event => {
                 } else {
                     nu.pathname += u.pathname + (u.search ?? '')
                 }
-                console.log(nu.pathname)
+                // console.log(nu.pathname)
                 //nu.searchParams.set('asset_url', u.pathname);
             } else {
                 nu.searchParams.set('id', v2);

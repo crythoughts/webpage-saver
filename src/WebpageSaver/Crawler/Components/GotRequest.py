@@ -21,6 +21,7 @@ class GotRequest(BaseModel):
     done: bool = Field(default = False)
     common_to_iframe: bool = Field(default = False)
 
+    internal_id: int = Field(default = None, exclude = True)
     _frame: Any = None
 
     def getContentType(self) -> str:
@@ -39,23 +40,41 @@ class GotRequest(BaseModel):
         # it can be made better!
 
         # TODO remove when better solution will be found
-        #if second_time:
-        #    if url in self.asset.url:
-        #        #print(content_type, self.getContentType())
+        if second_time:
+            u11 = URL(url)
+            u22 = URL(self.asset.url)
 
-        #        if content_type and content_type in self.getContentType():
-        #            return True # not True but TRUE!!!!!!
+            if u11.host == u22.host:
+                # comparing urls
+                if url in self.asset.url or u11.path in u22.path:
+                    #print(content_type, self.getContentType())
 
-        #        return True
+                    if content_type and content_type in self.getContentType():
+                        return True # not True but TRUE!!!!!!
 
-        #print(URL(page.getRelativeURL(self.asset.url, ruofc = False)), URL(page.getRelativeURL(url, ruofc = False)))
-        if URL(page.getRelativeURL(self.asset.url, ruofc = False)) == URL(page.getRelativeURL(url, ruofc = False)):
+                    return True
+
+                actual_parts = [p for p in u11.parts if p]
+                matches = [part for part in u22.parts if part in actual_parts]
+                match_count = len(matches)
+
+                # comparing urls by match count
+                if match_count > (len(u22.parts) / 2):
+                    return True
+
+        u1 = URL(page.getRelativeURL(self.asset.url, ruofc = False)).with_scheme('https')
+        u2 = URL(page.getRelativeURL(url, ruofc = False)).with_scheme('https')
+
+        if u1 == u2:
             return True
 
-        if URL(self.asset.url) == URL(url):
+        if URL(self.asset.url).with_scheme('https') == URL(url):
             return True
 
         if self.url == Asset.getDecodedURL(url):
             return True
 
         return False
+
+    def dump(self):
+        return self.model_dump(exclude_none = True, exclude_defaults = True)

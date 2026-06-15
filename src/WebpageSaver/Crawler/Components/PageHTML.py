@@ -293,7 +293,15 @@ class PageHTML:
             #_url = base64.urlsafe_b64encode(('assets/' + _file_url).encode()).decode()
             _url = item[page.getOrigAttr()]
             _key = item[page.getKeyAttr()]
-            _id = page.getAssetByUrl(_url)
+            _id = None
+
+            try:
+                _id = page.getAssetById(_url)
+            except Exception as e:
+                logging.exception(e)
+
+            if _id == None:
+                _id = page.getAssetByUrl(_url)
 
             # removing internal data attributes
             if _id == None:

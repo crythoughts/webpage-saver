@@ -11,6 +11,7 @@ class Asset(BaseModel):
     '''
     Anything that contains url or media data
     '''
+    internal_id: int = Field(default = None)
     url: str = Field(default = None)
     local_url: str = Field(default = None, exclude = True)
     bs_node: Any = Field(default = None, exclude = True)
@@ -30,11 +31,15 @@ class Asset(BaseModel):
         return d + '...'
 
     # we know that contents are downloaded so it will available in the displayment
-    def moveUrlToAnotherAttr(self, page):
+    def moveUrlToAnotherAttr(self, page, ids: int = None):
         _node = self.get_node()
 
         if _node != None and (_node.get('href') or _node.get('src')):
-            _node[page.getOrigAttr()] = self.url
+            if ids != None:
+                _node[page.getOrigAttr()] = ids
+            else:
+                _node[page.getOrigAttr()] = self.url
+
             _key = 'href'
 
             if _node.get('src') != None and _node.get('src') != '':
@@ -130,3 +135,6 @@ class Asset(BaseModel):
 
     def hasLocalURL(self):
         return self.local_url not in [None, '']
+
+    def dump(self):
+        return self.model_dump(exclude_none = True, exclude_defaults = True)

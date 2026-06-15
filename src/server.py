@@ -85,7 +85,7 @@ async def gpbid(request: web.Request):
     errors_descriptions = {
         'encoding': 'Decoding error occured. Try to choose another encoding (or choose utf-8).'
     }
-    # мдаааааа
+    # ...
     encoding = page.encoding
     if query.get('encoding', 'utf-8') != None:
         encoding = query.get('encoding', 'utf-8')
@@ -643,7 +643,7 @@ async def sp(request: web.Request):
         ignore_no_length = str(inputs.get('ignore_no_length', 0)) == '1'
         max_asset_size_mb = None
         if inputs.get('max_asset_size_mb') != None:
-            max_asset_size_mb = float(inputs.get('max_asset_size_mb'))
+            max_asset_size_mb = float(inputs.get('max_asset_size_mb', '30'))
 
         payload = await api.savePage(url = url, 
                                      link_pages = ps, 
@@ -700,11 +700,197 @@ async def sp(request: web.Request):
 
 @routes.get('/api/pages')
 async def gp(request: web.Request):
-    page_id = request.rel_url.query.get('id')
+    query = request.rel_url.query
+    page_id = query.get('id')
     if page_id != None:
         return web.json_response(api.getPagesById(ids = [page_id]))
 
+    q = query.get('q')
+
+    if q != None:
+        exact_match = str(query.get('exact_match', 0)) == '1'
+        display_mode = query.get('display_mode')
+
+        res = api.findPagesByURL(url = q, conv = False, conv_models = False, exact_match = exact_match)
+        search_type = res.get('type')
+        payload = {}
+
+        if display_mode == None:
+            match(search_type):
+                case 'keywords_search':
+                    display_mode = 'mini'
+                    payload['items'] = res.get('items')
+                case 'empty_search':
+                    display_mode = 'mini'
+                    payload['items'] = res.get('items')
+
+        if display_mode == 'calendar':
+            c = getCalendarForPages(res.get('items'), conv = True)
+
+            length = len(res.get('items'))
+            payload['items'] = c
+            payload['count'] = length
+
+        else:
+            payload['items'] = list()
+            for item in res.get('items'):
+                payload.get('items').append(item.toModel().dump())
+
+            payload['count'] = len(payload.get('items'))
+
+        payload.update({
+            'search_type': search_type,
+            'exact_match': exact_match,
+            'display_mode': display_mode
+        })
+
+        return web.json_response(payload)
+
     return web.json_response(api.getPages())
+
+@routes.get('/api/page/metatags')
+async def p1(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    encoding = query.get('encoding', 'utf-8')
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+    text = page.getRootFile().read_text(encoding = encoding)
+    html = PageHTML.from_html(text)
+    payload = {
+        'scripts': [],
+        'links': [],
+        'metatags': []
+    }
+
+    for i in page.meta:
+        payload.get('metatags').append(i.dump())
+
+    for i in html.get_links(page):
+        payload.get('links').append(i.dump())
+
+    for i in html.get_scripts(page):
+        payload.get('scripts').append(i.dump())
+
+    return web.json_response(payload)
+
+@routes.get('/api/page/requests')
+async def p2(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+    payload = {}
+
+    for i, v in page.assets_links.items():
+        payload[i] = v.dump()
+
+    return web.json_response(payload)
+
+@routes.get('/api/page/media')
+async def p3(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    encoding = query.get('encoding', 'utf-8')
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+
+    show_from_html = str(query.get('show_from_html', '0')) == '1'
+    mmode = query.get('mode')
+
+    text = page.getRootFile().read_text(encoding = encoding)
+    html = PageHTML.from_html(text)
+    if str(query.get('original', '0')) != '1':
+        html.make_local_links_to_assets(page, remove_temporary_attrs = False)
+
+    selectors = None
+
+    match (mmode):
+        case 'all':
+            selectors = '[src]'
+        case 'img':
+            selectors = 'img[src]'
+        case 'video':
+            selectors = 'video[src]'
+        case 'audio':
+            selectors = 'audio[src]'
+
+    medias = html.get_media(page, selectors, set_local_urls = True, show_from_requests = show_from_html == False)
+    payload = list()
+
+    for i in medias:
+        payload.append(i.dump())
+
+    return web.json_response(payload)
+
+@routes.get('/api/page/hyperlinks')
+async def p4(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    encoding = query.get('encoding', 'utf-8')
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+    rel = 'on'
+    text = page.getRootFile().read_text(encoding = encoding)
+    html = PageHTML.from_html(text)
+    if str(query.get('original', '0')) != '1':
+        html.make_local_links_to_assets(page, remove_temporary_attrs = False)
+
+    payload = list()
+
+    for i in html.get_urls(page, keep_original_urls = rel == 'off'):
+        payload.append(i.dump())
+
+    return web.json_response(payload)
+
+@routes.get('/api/page/stats')
+async def p5(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    encoding = query.get('encoding', 'utf-8')
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+    text = page.getRootFile().read_text(encoding = encoding)
+    html = PageHTML.from_html(text)
+
+    payload = list()
+
+    for i in html.getStats():
+        payload.append(i.dump())
+
+    return web.json_response(payload)
+
+@routes.get('/api/page/linked')
+async def p6(request: web.Request):
+    query = request.rel_url.query
+    page_id = query.get('id')
+    every_pages = str(query.get('every_pages', '0')) == '1'
+    items = api.getPagesById(ids = [page_id], convert = False)
+    if len(items) == 0:
+        raise web.HTTPNotFound()
+
+    page = items[0]
+    payload = list()
+
+    for i in page.getLinkedPages(every_pages = every_pages):
+        payload.append(i.dump())
+
+    return web.json_response(payload)
 
 @routes.delete('/api/page')
 async def dpbid(request: web.Request):
@@ -735,7 +921,7 @@ def swjs(request: web.Request):
 
 async def main():
     host = config.get('server.host', '127.0.0.1')
-    port = config.get('server.host', 7514)
+    port = config.get('server.port', 7514)
     client_max_size_megabytes = config.get('server.client_max_size_megabytes', 50)
 
     app = web.Application(client_max_size = 1024 * 1024 * client_max_size_megabytes)

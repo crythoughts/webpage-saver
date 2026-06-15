@@ -2,7 +2,7 @@
 
 - [x] Page viewer in web
 - [x] Pages list on web (and search)
-- [ ] websocket connection when saving
+- [ ] Save progress (show got requests)
 - [x] setting default webdriver
 
 **viewer**
@@ -10,6 +10,7 @@
 - [x] detect if link javascript: or normal
 - [x] forms submit
 - [x] css url('') replacer
+- [ ] fix wrong relative urls
 
 **downloader**
 

@@ -59,8 +59,8 @@ def _getCalendarStructure(year, month, records_dict: list):
     
     return month_structure
 
-def getCalendarForPages(records):
-    grouped_records = _groupRecordByDate(records)
+def getCalendarForPages(records, conv: bool = False):
+    grouped_records = _groupRecordByDate(records, conv = conv)
 
     calendar_structure = {
         'years': {},
