@@ -445,8 +445,30 @@ def gpsbid(request):
 def spw(request: web.Request):
     return aiohttp_jinja2.render_template('save.html',request,{
         'webdrivers': api.getWebdrivers(conv = False),
-        'webdrivers_index': api.w_repo._getCurrentWebdriverIndex()
+        'webdrivers_index': api.w_repo._getCurrentWebdriverIndex(),
+        'config': config
     })
+
+@routes.get('/save/sitemap')
+@routes.post('/save/sitemap')
+async def spw(request: web.Request):
+    ctx = {}
+    if request.method == 'POST':
+        data = await request.post()
+        url = data.get('sitemap_url')
+        max_pages = None
+        max_semaphore = None
+
+        if data.get('max_pages') != None and data.get('max_pages') != '':
+            max_pages = int(data.get('max_pages'))
+
+        if data.get('max_semaphore') != None and data.get('max_semaphore') != '':
+            max_semaphore = int(data.get('max_semaphore'))
+
+        items = await api.saveSitemap(url = url, max_pages = max_pages, max_semaphore = max_semaphore, conv = True)
+        ctx['pages'] = items
+
+    return aiohttp_jinja2.render_template('save_sitemap.html', request, ctx)
 
 @routes.get('/page/search')
 def sfp(request: web.Request):

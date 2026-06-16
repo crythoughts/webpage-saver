@@ -1,0 +1,36 @@
+{% extends '@layout.html' %}
+
+{% block title %}
+Archive pages from sitemap
+{% endblock %}
+
+{% block body %}
+<div class="pt-5 pb-10 pl-15 pr-15 w-full">
+    <form method="POST" class="w-full">
+        <input class="w-full bg-white p-5" type="text" name="sitemap_url" placeholder="URL to sitemap">
+
+        <div>
+            max download pages
+            <input class="bg-white p-2" type="number" name="max_pages">
+        </div>
+
+        <div>
+            max download in bg
+            <input class="bg-white p-2" type="number" name="max_semaphore" value="3">
+        </div>
+
+        <input class="bg-white p-5 mt-5 cursor-pointer" type="submit" value="Get">
+    </form>
+
+    <div id="got">
+        {% if pages != None %}
+            {% for page in pages %}
+                <div>
+                    <a href="/page/{{page.identify}}?mode=meta" title="{{page.title}}">{{page.url}}</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

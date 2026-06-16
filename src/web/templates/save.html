@@ -39,7 +39,7 @@ Archive page
             <div>
                 <b>Sleep</b>
                 <div>
-                    <input class="bg-white" type="number" name="sleep_before_crawl_s" value="1">
+                    <input class="bg-white" type="number" name="sleep_before_crawl_s" value="{{config.get('sleep_default', 1)}}">
                 </div>
             </div>
             <div>
@@ -51,7 +51,7 @@ Archive page
                     </label>
                 </div>
                 <div>
-                    <span>Do not download assets bigger than <input min="0" value="30" class="bg-white w-20" type="number" name="max_asset_size_mb"> MB</span>
+                    <span>Do not download assets bigger than <input min="0" value="1000" class="bg-white w-20" type="number" name="max_asset_size_mb"> MB</span>
                 </div>
             </div>
             <div class="text-right">

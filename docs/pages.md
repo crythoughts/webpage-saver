@@ -57,6 +57,8 @@ It also creates subpages for `<iframe>`s.
 
 - The most sensitive functions are WebPage.getRelativeURL, GotRequest.compare_urls, WebPage.getAssetByUrl.
 
+- Relative URLs can be broken.
+
 ### Search
 
 If you write something, it will search in titles of pages. If you write an URL, it will show you calendar with highlighted days of the available archived copies.

@@ -21,4 +21,4 @@ You can also specify `args`, `user_data_dir` and `user_agent`.
 
 Set `webdriver_type` key to "CDP" and set `cdp_endpoint` if needed.
 
-Also, you need to start Chrome with `--remote-debugging-port=9222 --user-data-dir="-"` flags.
+Also, you need to start Chrome with `--remote-debugging-port=9222 --user-data-dir="[another folder]"` flags.

@@ -8,6 +8,9 @@ from WebpageSaver.Crawler.Components.Utils import toURLWithoutMeaninglessDiffs
 from yarl import URL
 from peewee import fn
 import logging
+import aiohttp
+import xml.etree.ElementTree as ET
+import asyncio
 
 cache = Cache()
 
@@ -273,3 +276,41 @@ class API:
             'items': payload,
             'url': find_url
         }
+
+    async def saveSitemap(self, url: str, 
+                          conv: bool = True, 
+                          max_semaphore: int = 3,
+                          max_pages: int = None,
+                          ):
+        session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=10,sock_read=10)
+        data = None
+        self.items = []
+
+        async with aiohttp.ClientSession(timeout = session_timeout) as session:
+            async with session.get(url) as response:
+                data = await response.text()
+
+        root = ET.fromstring(data)
+        namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+        urls = [loc.text for loc in root.findall('.//ns:url/ns:loc', namespaces)]
+        count = len(urls)
+        self.d_c = 0
+
+        logging.info('{0} pages in this file'.format(count))
+
+        async def with_semaphore(url, semaphore):
+            async with semaphore:
+                if max_pages == None or self.d_c < max_pages:
+                    pages = await self.savePage(url, conv = False)
+                    self.d_c += 1
+
+                    for p in pages:
+                        self.items.append(p)
+
+        sem = asyncio.Semaphore(max_semaphore)
+        r = await asyncio.gather(
+            *[with_semaphore(url, sem) for url in urls],
+            return_exceptions=True
+        )
+
+        return self.items
