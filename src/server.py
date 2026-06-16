@@ -456,6 +456,7 @@ async def spw(request: web.Request):
     if request.method == 'POST':
         data = await request.post()
         url = data.get('sitemap_url')
+        ignore_already_saved = data.get('ignore_already_saved') == 'on'
         max_pages = None
         max_semaphore = None
 
@@ -465,7 +466,7 @@ async def spw(request: web.Request):
         if data.get('max_semaphore') != None and data.get('max_semaphore') != '':
             max_semaphore = int(data.get('max_semaphore'))
 
-        items = await api.saveSitemap(url = url, max_pages = max_pages, max_semaphore = max_semaphore, conv = True)
+        items = await api.saveSitemap(url = url, max_pages = max_pages, max_semaphore = max_semaphore, ignore_already_saved = ignore_already_saved, conv = True)
         ctx['pages'] = items
 
     return aiohttp_jinja2.render_template('save_sitemap.html', request, ctx)

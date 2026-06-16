@@ -281,6 +281,7 @@ class API:
                           conv: bool = True, 
                           max_semaphore: int = 3,
                           max_pages: int = None,
+                          ignore_already_saved: bool = False
                           ):
         session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=10,sock_read=10)
         data = None
@@ -293,10 +294,35 @@ class API:
         root = ET.fromstring(data)
         namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
         urls = [loc.text for loc in root.findall('.//ns:url/ns:loc', namespaces)]
-        count = len(urls)
         self.d_c = 0
 
-        logging.info('{0} pages in this file'.format(count))
+        if ignore_already_saved == True:
+            p_a = list()
+
+            for url in urls:
+                p_a.append(toURLWithoutMeaninglessDiffs(url))
+
+            _p = Page.select().where(Page.url.in_(p_a))
+            f = list()
+
+            for r in _p:
+                f.append(r.toModel().url)
+
+            new_urls = []
+            for i in urls:
+                if i in f:
+                    logging.info("skipping {0}".format(i))
+                else:
+                    new_urls.append(i)
+
+            logging.info('total {0} pages in this file'.format(len(urls)))
+
+            urls = new_urls
+
+            logging.info('{0} pages in this file that will be archived'.format(len(urls)))
+        else:
+            count = len(urls)
+            logging.info('{0} pages in this file'.format(count))
 
         async def with_semaphore(url, semaphore):
             async with semaphore:
