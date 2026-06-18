@@ -17,6 +17,9 @@ Found {{count}} items ({{search_type}})
                 <div>
                     {% if search_type == 'empty_search' %}
                         <b>All available pages ({{count}})</b>
+                        <div>
+                            <a href="?show_iframes=on">Show iframes</a>
+                        </div>
                     {% else %}
                         <b>Search in title</b>
                         <p>"{{q}}"</p>

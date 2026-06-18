@@ -477,8 +477,12 @@ def sfp(request: web.Request):
     q = query.get('q', '')
     exact_match = query.get('exact_match') == 'on'
     display_mode = query.get('display_mode')
+    show_iframes = query.get('show_iframes') == 'on'
 
-    res = api.findPagesByURL(url = q, conv = False, conv_models = False, exact_match = exact_match)
+    if query.get('show_iframes') == None:
+        show_iframes = display_mode in ['urls', 'accurate_url', 'domain_search']
+
+    res = api.findPagesByURL(url = q, conv = False, show_iframes = show_iframes, conv_models = False, exact_match = exact_match)
     search_type = res.get('type')
     ctx = {}
 
@@ -486,10 +490,8 @@ def sfp(request: web.Request):
         match(search_type):
             case 'keywords_search':
                 display_mode = 'mini'
-                ctx['items'] = res.get('items')
             case 'empty_search':
                 display_mode = 'mini'
-                ctx['items'] = res.get('items')
             case 'domain_search':
                 display_mode = 'calendar'
             case 'urls':

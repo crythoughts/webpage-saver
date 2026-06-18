@@ -179,6 +179,7 @@ class API:
 
     def findPagesByURL(self, url: str, 
                        conv: bool = True,
+                       show_iframes: bool = False,
                        conv_models: bool = True,
                        find_by_start: bool = False,
                        exact_match: bool = False
@@ -197,10 +198,14 @@ class API:
         if mode == None and (url == '' or u.host == None):
             pages = Page.select()
             if url != '':
-                pages = pages.where(Page.title.startswith(find_url)).where(Page.is_frame == 0)
+                pages = pages.where(Page.title.startswith(find_url))
+
                 mode = 'keywords_search'
             else:
                 mode = 'empty_search'
+
+            if show_iframes == False:
+                pages = pages.where(Page.is_frame == 0)
 
             pages = pages.order_by(Page.taken_at.desc())
 
@@ -215,7 +220,11 @@ class API:
 
         # Finding by start of the URL
         if mode == None and find_by_start:
-            pages = Page.select().where(Page.url.startswith(find_url)).where(Page.is_frame == 0).group_by(Page.url).order_by(Page.taken_at.desc())
+            pages = Page.select().where(Page.url.startswith(find_url)).group_by(Page.url).order_by(Page.taken_at.desc())
+
+            if show_iframes == False:
+                pages = pages.where(Page.is_frame == 0)
+
             mode = 'urls'
 
             for p in pages:
@@ -239,7 +248,10 @@ class API:
                 else:                        
                     pages = pages.where(Page.domain.like(u.host))
 
-                pages = pages.where(Page.is_frame == 0).order_by(Page.taken_at.desc())
+                if show_iframes == False:
+                    pages = pages.where(Page.is_frame == 0)
+
+                pages = pages.order_by(Page.taken_at.desc())
                 for p in pages:
                     if conv:
                         payload.append(p.toModel().dump())
@@ -260,7 +272,10 @@ class API:
                 else:
                     pages = pages.where(Page.url % find_url)
 
-                pages = pages.where(Page.is_frame == 0).order_by(Page.taken_at.desc())
+                if show_iframes == False:
+                    pages = pages.where(Page.is_frame == 0)
+
+                pages = pages.order_by(Page.taken_at.desc())
 
                 for p in pages:
                     if conv:

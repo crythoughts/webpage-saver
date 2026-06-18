@@ -42,10 +42,7 @@ class WebdriversRepo:
             return self.getDefault()
 
     def getDefault(self) -> Webdriver:
-        try:
-            return list(self.getAll())[self._getCurrentWebdriverIndex()]
-        except IndexError:
-            raise IndexError("No webdriver")
+        return list(self.getAll())[self._getCurrentWebdriverIndex()]
 
     def add(self, webdriver: Webdriver):
         similar = None
