@@ -42,7 +42,10 @@ class WebdriversRepo:
             return self.getDefault()
 
     def getDefault(self) -> Webdriver:
-        return list(self.getAll())[self._getCurrentWebdriverIndex()]
+        try:
+            return list(self.getAll())[self._getCurrentWebdriverIndex()]
+        except IndexError:
+            raise IndexError("No webdriver")
 
     def add(self, webdriver: Webdriver):
         similar = None
@@ -81,7 +84,7 @@ class WebdriversRepo:
     def getPlatform(self):
         version = ['', '']
         system_type = platform.system().lower()
-        architecture = platform.machine().lower() 
+        architecture = platform.machine().lower()
 
         if architecture in ['x86_64', 'amd64']:
             version[1] = '64'

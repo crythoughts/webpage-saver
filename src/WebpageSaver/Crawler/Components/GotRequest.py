@@ -5,23 +5,23 @@ from yarl import URL
 import logging
 
 class GotRequest(BaseModel):
-    url: str = Field(default = None)
-    content_type: str = Field(default = None)
+    url: str | None = Field(default = None)
+    content_type: str | None = Field(default = None)
     status: int = Field(default = 200)
 
-    asset: Asset = Field(default = None)
+    asset: Asset | None = Field(default = None)
     request: Any = Field(default = None, exclude = True)
     response: Any = Field(default = None, exclude = True)
     is_first_ever: bool = Field(default = False)
 
-    started_at: float = Field(default = None)
-    ended_at: float = Field(default = None)
-    interrupted_at: float = Field(default = None)
+    started_at: float | None = Field(default = None)
+    ended_at: float | None = Field(default = None)
+    interrupted_at: float | None = Field(default = None)
 
     done: bool = Field(default = False)
     common_to_iframe: bool = Field(default = False)
 
-    internal_id: int = Field(default = None, exclude = True)
+    internal_id: int | None = Field(default = None, exclude = True)
     _frame: Any = None
 
     def getContentType(self) -> str:
@@ -31,6 +31,9 @@ class GotRequest(BaseModel):
         return ''
 
     def getDownloadedIn(self) -> float:
+        if self.ended_at == None or self.started_at == None:
+            return 0.0
+
         return round(self.ended_at - self.started_at, 2)
 
     def url_matches(self, url: str):
@@ -68,8 +71,14 @@ class GotRequest(BaseModel):
         if u1 == u2:
             return True
 
-        if URL(self.asset.url).with_scheme('https') == URL(url):
+        if URL(self.asset.url) == URL(url):
             return True
+
+        try:
+            if URL(self.asset.url).with_scheme('https') == URL(url):
+                return True
+        except:
+            pass
 
         if self.url == Asset.getDecodedURL(url):
             return True
